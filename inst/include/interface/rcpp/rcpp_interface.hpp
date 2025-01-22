@@ -574,9 +574,11 @@ void log_error(std::string log_entry) {
 RCPP_EXPOSED_CLASS(Parameter)
 RCPP_EXPOSED_CLASS(ParameterVector)
 RCPP_EXPOSED_CLASS(RealVector)
+RCPP_EXPOSED_CLASS(SharedInt)
+RCPP_EXPOSED_CLASS(Shareddouble)
 
-
-
+typedef SharedInt fims_int;
+typedef SharedReal fims_double;
 /**
  * @brief The `fims` Rcpp module construct, providing declarative code of what
  * the module exposes to R.
