@@ -575,10 +575,9 @@ RCPP_EXPOSED_CLASS(Parameter)
 RCPP_EXPOSED_CLASS(ParameterVector)
 RCPP_EXPOSED_CLASS(RealVector)
 RCPP_EXPOSED_CLASS(SharedInt)
-RCPP_EXPOSED_CLASS(Shareddouble)
+RCPP_EXPOSED_CLASS(ShareReal)
 
-typedef SharedInt fims_int;
-typedef SharedReal fims_double;
+
 /**
  * @brief The `fims` Rcpp module construct, providing declarative code of what
  * the module exposes to R.
@@ -728,16 +727,16 @@ RCPP_MODULE(fims) {
             .method("get_id", &RealVector::get_id,
             "Gets the ID of the RealVector object.");
 
-    Rcpp::class_<fims_int>(
-            "fims_int",
+    Rcpp::class_<SharedInt>(
+            "SharedInt",
             "An RcppInterface class that defines the fims_int class.")
             .constructor()
             .constructor<int>()
             .method("get", &fims_int::get)
             .method("set", &fims_int::set);
     
-       Rcpp::class_<fims_double>(
-            "fims_double",
+       Rcpp::class_<SharedReal>(
+            "SharedReal",
             "An RcppInterface class that defines the fims_int class.")
             .constructor()
             .constructor<double>()

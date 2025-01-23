@@ -467,6 +467,14 @@ public:
     virtual ~RealVector() {
     }
 
+    RealVector& operator=(const Rcpp::NumericVector& v) {
+        this->storage_m->resize(v.size());
+        for (size_t i = 0; i < v.size(); i++) {
+            storage_m->at(i) = v[i];
+        }
+        return *this;
+    }
+
     /**
      * @brief Gets the ID of the RealVector object.
      */
@@ -568,12 +576,6 @@ public:
 
 };
 uint32_t RealVector::id_g = 0;
-
-
-
-
-
-
 
 /**
  *@brief Base class for all interface objects.

@@ -264,3 +264,42 @@ methods::setMethod(
 CreateRealVector <- function(values = numeric()) {
   new(RealVector, values = values)
 }
+
+
+# Getter method
+setMethod("$", "Rcpp_SharedInt", function(x, name) {
+    if (name == "value") {
+        return(x$get())
+    }
+    stop("Invalid field")
+})
+
+# Setter method
+setMethod("$<-", "Rcpp_SharedInt", function(x, name, value) {
+    if (name == "value") {
+        x$set(value)
+        return(x)
+    }
+    stop("Invalid field")
+})
+
+
+
+# Getter method
+setMethod("$", "Rcpp_SharedReal", function(x, name) {
+    if (name == "value") {
+        return(x$get())
+    }
+    stop("Invalid field")
+})
+
+# Setter method
+setMethod("$<-", "Rcpp_SharedReal", function(x, name, value) {
+    if (name == "value") {
+        x$set(value)
+        return(x)
+    }
+    stop("Invalid field")
+})
+
+

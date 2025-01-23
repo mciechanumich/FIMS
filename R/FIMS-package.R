@@ -28,7 +28,8 @@
 #' @export ParameterVector
 #' @export RealVector
 #' @export CreateVector
-#' @export fims_int
+#' @export SharedInt
+#' @export SharedReal
 #' @export Population
 #' @export set_log_throw_on_error
 #' @import methods
