@@ -320,15 +320,37 @@ create_default_fleet <- function(fleets,
   # Determine default fleet parameters based on types of data present
   # FIXME: allow for a fleet to have both landings and index data
   process_default <- if ("landings" %in% data_types_present) {
-    list(
-      log_Fmort.value = log(rep(0.00001, get_n_years(data))),
-      log_Fmort.estimated = TRUE
-    )
+    if ("index" %in% data_types_present) {
+      list(
+        log_q.value = 0,
+        log_q.estimated = TRUE,
+        log_Fmort.value = log(rep(0.01, get_n_years(data))),
+        log_Fmort.estimated = TRUE
+      )
+    }else{
+      list(
+        log_q.value = 0,
+        log_q.estimated = FALSE,
+        log_Fmort.value = log(rep(0.01, get_n_years(data))),
+        log_Fmort.estimated = TRUE
+      )
+    }
   } else {
-    list(
-      log_q.value = 0,
-      log_q.estimated = TRUE
-    )
+    if ("index" %in% data_types_present) {
+      list(
+        log_q.value = 0,
+        log_q.estimated = TRUE,
+        log_Fmort.value = log(rep(0.00001, get_n_years(data))),
+        log_Fmort.estimated = FALSE
+      )
+    }else{
+      list(
+        log_q.value = 0,
+        log_q.estimated = FALSE,
+        log_Fmort.value = log(rep(0.00001, get_n_years(data))),
+        log_Fmort.estimated = FALSE
+      )
+    }
   }
 
   names(process_default) <- paste0("Fleet.", names(process_default))
@@ -338,7 +360,7 @@ create_default_fleet <- function(fleets,
 
   # FIXME: Will this work if both landings and index data are present?
   index_uncertainty <- get_data(data) |>
-    dplyr::filter(name == fleet_name, type %in% c("landings", "index")) |>
+    dplyr::filter(name == fleet_name, type %in% c("index")) |>
     dplyr::arrange(dplyr::desc(type)) |>
     dplyr::pull(uncertainty)
 
@@ -360,11 +382,38 @@ create_default_fleet <- function(fleets,
     names(index_distribution_default)
   )
 
+  # Create catch distribution defaults
+  catch_distribution <- fleets[[fleet_name]][["data_distribution"]]["Catch"]
+
+  catch_uncertainty <- get_data(data) |>
+    dplyr::filter(name == fleet_name, type %in% c("landings")) |>
+    dplyr::arrange(dplyr::desc(type)) |>
+    dplyr::pull(uncertainty)
+
+  catch_distribution_default <- switch(catch_distribution,
+    "DnormDistribution" = create_default_DnormDistribution(
+      value = catch_uncertainty,
+      input_type = "data",
+      data = data
+    ),
+    "DlnormDistribution" = create_default_DlnormDistribution(
+      value = catch_uncertainty,
+      input_type = "data",
+      data = data
+    )
+  )
+  names(catch_distribution_default) <- paste0(
+    catch_distribution,
+    ".",
+    names(catch_distribution_default)
+  )
+
   # Compile all default parameters into a single list
   default <- list(c(
     selectivity_default,
     process_default,
-    index_distribution_default
+    index_distribution_default,
+    catch_distribution_default
   ))
 
   names(default) <- fleet_name

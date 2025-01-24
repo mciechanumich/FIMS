@@ -79,6 +79,10 @@ class FleetInterface : public FleetInterfaceBase {
    */
   int interface_observed_index_data_id_m = -999;
   /**
+   * @brief The ID of the observed catch data object.
+   */
+  int interface_observed_catch_data_id_m = -999;
+  /**
    * @brief The ID of the selectivity object.
    */
   int interface_selectivity_id_m = -999;
@@ -90,10 +94,8 @@ public:
   std::string name = "NA";
   /**
    * @brief Is this fleet a survey, then true. If the fleet is a fishery, then
-   * false, where false is the default. As of version 0.3.0, a fleet in FIMS
-   * cannot accommodate both landings and index data, and thus must be
-   * designated to be a fleet or a survey. This will be fixed in later
-   * versions.
+   * false, where false is the default. Should we remove this now that fleets 
+   * can have both catch and index data? 
    */
   bool is_survey = false;
   /**
@@ -117,6 +119,10 @@ public:
    * fleet.
    */
   ParameterVector log_Fmort;
+  /**
+   * @brief The vector of natural log of the expected total catch for the fleet.
+   */
+  ParameterVector log_expected_catch;
   /**
    * @brief The vector of natural log of the expected index of abundance for the fleet.
    */
@@ -153,7 +159,10 @@ public:
   /**
    * @brief Derived catch-at-age in weight (mt).
    */
-  Rcpp::NumericVector derived_cwaa;
+  Rcpp::NumericVector derived_cwaa;  /**
+   * @brief Derived catch.
+   */
+  Rcpp::NumericVector derived_catch;
   /**
    * @brief Derived index.
    */
@@ -208,6 +217,13 @@ public:
   }
 
   /**
+   * @brief Set the unique ID for the observed catch data object.
+   * @param observed_catch_data_id Unique ID for the observed data object.
+   */
+  void SetObservedCatchData(int observed_catch_data_id) {
+    interface_observed_catch_data_id_m = observed_catch_data_id;
+  }
+  /**
    * @brief Set the unique ID for the selectivity object.
    * @param selectivity_id Unique ID for the observed object.
    */
@@ -237,6 +253,12 @@ public:
     return interface_observed_index_data_id_m;
   }
 
+  /**
+   * @brief Get the unique id for the observed catch data object.
+   */
+  int GetObservedCatchDataID() {
+    return interface_observed_catch_data_id_m;
+  }
   /** 
    * @brief Extracts the derived quantities from `Information` to the Rcpp
    * object. 
@@ -309,6 +331,11 @@ public:
       this->derived_index = Rcpp::NumericVector(fleet->expected_index.size());
       for (R_xlen_t i = 0; i < this->derived_index.size(); i++) {
         this->derived_index[i] = fleet->expected_index[i];
+      }
+
+      this->derived_catch = Rcpp::NumericVector(fleet->expected_catch.size());
+      for (R_xlen_t i = 0; i < this->derived_catch.size(); i++) {
+        this->derived_catch[i] = fleet->expected_catch[i];
       }
 
     }
@@ -484,6 +511,8 @@ public:
     info->variable_map[this->log_Fmort.id_m] = &(fleet)->log_Fmort;
 
     //exp_catch
+    fleet->log_expected_catch.resize(nyears);  // assume catch is for all ages.
+    info->variable_map[this->log_expected_catch.id_m] = &(fleet)->log_expected_catch;
     fleet->log_expected_index.resize(nyears);  // assume index is for all ages.
     info->variable_map[this->log_expected_index.id_m] = &(fleet)->log_expected_index;
     fleet->proportion_catch_numbers_at_age.resize(nyears * nages);

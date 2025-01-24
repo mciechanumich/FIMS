@@ -402,7 +402,7 @@ initialize_selectivity <- function(parameters, data, fleet_name) {
 #' @inheritParams initialize_module
 #' @param fleet_name A character. Name of the fleet to initialize.
 #' @param linked_ids A vector. Named vector of linked IDs required for the
-#'  fleet, including IDs for "selectivity", "index", "age_comp", and "length_comp".
+#'  fleet, including IDs for "selectivity", "catch", "index", "age_comp", and "length_comp".
 #' @return
 #' The initialized fleet module as an object.
 #' @noRd
@@ -414,6 +414,7 @@ initialize_fleet <- function(parameters, data, fleet_name, linked_ids) {
   )
 
   module$SetSelectivity(linked_ids["selectivity"])
+  module$SetObservedCatchData(linked_ids["catch"])
   module$SetObservedIndexData(linked_ids["index"])
 
   fleet_types <- get_data(data) |>
@@ -438,6 +439,39 @@ initialize_fleet <- function(parameters, data, fleet_name, linked_ids) {
     module$SetObservedLengthCompData(linked_ids["length_comp"])
   }
   return(module)
+}
+
+#' Initialize a catch module
+#'
+#' @description
+#' Initializes a catch module based on the provided data and fleet name.
+#' @inheritParams initialize_module
+#' @param fleet_name A character. Name of the fleet for which the catch module
+#'   is initialized.
+#' @return
+#' The initialized catch module as an object.
+#' @noRd
+initialize_catch <- function(data, fleet_name) {
+  # Check if the specified fleet exists in the data
+  fleet_exists <- any(get_data(data)["name"] == fleet_name)
+  if (!fleet_exists) {
+    cli::cli_abort("Fleet {fleet_name} not found in the data object.")
+  }
+
+  fleet_type <- dplyr::filter(
+    .data = as.data.frame(data@data),
+    name == fleet_name
+  ) |>
+    dplyr::distinct(type) |>
+    dplyr::pull(type)
+
+  if ("landings" %in% fleet_type) {
+    module <- methods::new(Catch, get_n_years(data))
+    module[["catch_data"]] <- m_landings(data, fleet_name)
+    return(module)
+  }else{
+    return(NULL)
+  } 
 }
 
 #' Initialize an index module
@@ -465,20 +499,15 @@ initialize_index <- function(data, fleet_name) {
     dplyr::pull(type)
 
 
-  module <- methods::new(Index, get_n_years(data))
+  
 
-  if ("landings" %in% fleet_type) {
-    module[["index_data"]] <- m_landings(data, fleet_name)
-  } else if ("index" %in% fleet_type) {
+  if ("index" %in% fleet_type) {
+    module <- methods::new(Index, get_n_years(data))
     module[["index_data"]] <- m_index(data, fleet_name)
+    return(module)
   } else {
-    cli::cli_abort(c(
-      "Fleet type `{fleet_type}` is not valid for index module initialization.
-      Only 'landings' or 'index' are supported."
-    ))
+    return(NULL)
   }
-
-  return(module)
 }
 
 #' Initialize an age-composition module
@@ -608,6 +637,7 @@ initialize_fims <- function(parameters, data) {
 
   # Initialize lists to store fleet-related objects
   fleet <- fleet_selectivity <-
+    fleet_catch <- fleet_catch_distribution <-
     fleet_index <- fleet_index_distribution <-
     fleet_age_comp <- fleet_agecomp_distribution <-
     fleet_length_comp <- fleet_lengthcomp_distribution <-
@@ -617,6 +647,11 @@ initialize_fims <- function(parameters, data) {
   for (i in seq_along(fleet_names)) {
     fleet_selectivity[[i]] <- initialize_selectivity(
       parameters = parameters,
+      data = data,
+      fleet_name = fleet_names[i]
+    )
+
+    fleet_catch[[i]] <- initialize_catch(
       data = data,
       fleet_name = fleet_names[i]
     )

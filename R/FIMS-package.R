@@ -17,6 +17,7 @@
 #' @export get_log_warnings
 #' @export get_output
 #' @export get_random
+#' @export Catch
 #' @export Index
 #' @export LengthComp
 #' @export log_error

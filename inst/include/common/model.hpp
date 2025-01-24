@@ -166,6 +166,7 @@ namespace fims_model {
                 if (f->nlengths > 0) {
                   f->evaluate_length_comp();
                 }
+                f->evaluate_catch();
                 f->evaluate_index();
             }
             this->fims_information->SetupData();
@@ -255,6 +256,7 @@ namespace fims_model {
             vector<Type> LogRecDev = ADREPORTvector(log_recruit_dev);
             vector<Type> FMort = ADREPORTvector(F_mort);
             vector<Type> Q = ADREPORTvector(q);
+            vector<Type> ExpectedCatch = ADREPORTvector(exp_catch);
             vector<Type> ExpectedIndex = ADREPORTvector(exp_index);
             vector<Type> CNAA = ADREPORTvector(cnaa);
             vector<Type> CNAL = ADREPORTvector(cnal);
@@ -267,6 +269,7 @@ namespace fims_model {
             ADREPORT_F(LogRecDev, of);
             ADREPORT_F(FMort, of);
             ADREPORT_F(Q, of);
+            ADREPORT_F(ExpectedCatch, of);
             ADREPORT_F(ExpectedIndex, of);
             ADREPORT_F(CNAA, of);
             ADREPORT_F(CNAL, of);
