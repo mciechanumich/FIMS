@@ -52,7 +52,6 @@ struct SRBevertonHolt : public RecruitmentBase<Type> {
     Type steep_lo = 0.2;
     Type steep_hi = 1.0;
     Type rzero;
-    std::cout<<"this->logit_steep.size() = "<<this->logit_steep.size()<<std::endl;
     
     // Transform input parameters
     steep = fims_math::inv_logit(steep_lo, steep_hi, this->logit_steep[0]);

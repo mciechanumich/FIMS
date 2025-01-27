@@ -83,7 +83,6 @@ bool CreateTMBModel() {
     FIMS_INFO_LOG("adding FIMS objects to TMB");
     for (size_t i = 0; i < FIMSRcppInterfaceBase::fims_interface_objects.size();
             i++) {
-        std::cout<<i <<" of "<< FIMSRcppInterfaceBase::fims_interface_objects.size()<<std::endl;
         FIMSRcppInterfaceBase::fims_interface_objects[i]->add_to_fims_tmb();
     }
 

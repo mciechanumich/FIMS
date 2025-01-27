@@ -423,7 +423,6 @@ public:
             }
         }
         info->variable_map[this->log_init_naa.id_m] = &(population)->log_init_naa;
-        std::cout<<population->ages.size()<<" ?= "<<ages.size()<<std::endl;
         for (int i = 0; i < ages.size(); i++) {
             population->ages[i] = this->ages[i];
         }

@@ -68,19 +68,19 @@ struct RecruitmentBase : public fims_model_object::FIMSObject<Type> {
    *  https://groups.google.com/a/admb-project.org/g/users/c/63YJmYGEPuE
    */
   void PrepareConstrainedDeviations() {
-//    if (!this->constrain_deviations) {
-//      return;
-//    }
-//
-//    Type sum = 0.0;
-//
-//    for (size_t i = 0; i < this->log_recruit_devs.size(); i++) {
-//      sum += this->log_recruit_devs[i];
-//    }
-//
-//    for (size_t i = 0; i < this->log_recruit_devs.size(); i++) {
-//      this->log_recruit_devs[i] -= sum / (this->log_recruit_devs.size());
-//    }
+    if (!this->constrain_deviations) {
+      return;
+    }
+
+    Type sum = 0.0;
+
+    for (size_t i = 0; i < this->log_recruit_devs.size(); i++) {
+      sum += this->log_recruit_devs[i];
+    }
+
+    for (size_t i = 0; i < this->log_recruit_devs.size(); i++) {
+      this->log_recruit_devs[i] -= sum / (this->log_recruit_devs.size());
+    }
   }
 };
 
