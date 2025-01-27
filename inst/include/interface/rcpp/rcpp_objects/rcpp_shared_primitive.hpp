@@ -530,7 +530,94 @@ SharedReal operator/(const double& lhs, const SharedReal& rhs) {
     return SharedReal(lhs / rhs.get());
 }
 
+
+class SharedString {
+private:
+    std::shared_ptr<std::string> value;
+
+public:
+    // Constructor
+
+    SharedString() : value(std::make_shared<std::string>()) {
+    }
+
+    SharedString(std::string val) : value(std::make_shared<std::string>(val)) {
+    }
+
+    // Copy Constructor
+
+    SharedString(const SharedString& other) : value(other.value) {
+    }
+
+    // Assignment Operator
+
+    SharedString& operator=(const SharedString& other) {
+        if (this != &other) {
+            value = other.value;
+        }
+        return *this;
+    }
+
+    SharedString& operator=(const std::string& other) {
+
+        *value = other;
+
+        return *this;
+    }
+
+    // Move Constructor
+
+    SharedString(SharedString&& other) noexcept : value(std::move(other.value)) {
+    }
+
+    // Move Assignment Operator
+
+    SharedString& operator=(SharedString&& other) noexcept {
+        if (this != &other) {
+            value = std::move(other.value);
+        }
+        return *this;
+    }
+
+    // Access the value
+
+    std::string get() const {
+        return *value;
+    }
+
+    void set(std::string val) {
+        *value = val;
+    }
+
+    operator std::string() {
+        return this->get();
+    }
+
+    // Overloaded operators for SharedPrimitive
+
+    std::string operator*() const {
+        return *value;
+    } // Dereference
+
+    std::string* operator->() {
+        return value.get();
+    } // Arrow operator
+
+    const std::string* operator->() const {
+        return value.get();
+    } // Const arrow operator
+
+   
+
+    friend std::ostream& operator<<(std::ostream& os, const SharedString& sp) {
+        os << *sp.value;
+        return os;
+    }
+};
+
 typedef SharedInt fims_int;
 typedef SharedReal fims_double;
+typedef SharedString fims_string;
+
 
 #endif

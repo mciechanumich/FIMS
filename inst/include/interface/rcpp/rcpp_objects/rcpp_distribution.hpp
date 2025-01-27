@@ -30,11 +30,11 @@ public:
     /**
      * @brief The unique ID for the variable map that points to a fims::Vector.
      */
-    std::vector<uint32_t> key_m;
+    std::shared_ptr<std::vector<uint32_t> > key_m;
     /**
      * @brief The type of density input. The options are prior, re, or data.
      */
-    std::string input_type_m;
+    SharedString input_type_m;
     /**
      * @brief The map associating the ID of the DistributionsInterfaceBase to the
        DistributionsInterfaceBase objects. This is a live object, which is an
@@ -50,6 +50,7 @@ public:
      * @brief The constructor.
      */
     DistributionsInterfaceBase() {
+        this->key_m = std::make_shared<std::vector<uint32_t> >();
         this->id_m = DistributionsInterfaceBase::id_g++;
         /* Create instance of map: key is id and value is pointer to
         DistributionsInterfaceBase */
@@ -173,10 +174,10 @@ public:
      * value(s), or observed data vector.
      */
     virtual bool set_distribution_links(std::string input_type, Rcpp::IntegerVector ids) {
-        this->input_type_m = input_type;
-        this->key_m.resize(ids.size());
+        this->input_type_m.set(input_type);
+        this->key_m->resize(ids.size());
         for (int i = 0; i < ids.size(); i++) {
-            this->key_m[i] = ids[i];
+            this->key_m->at(i) = ids[i];
         }
         return true;
     }
@@ -284,9 +285,9 @@ public:
         distribution->observed_data_id_m =
                 interface_observed_data_id_m;
         distribution->input_type = this->input_type_m;
-        distribution->key.resize(this->key_m.size());
-        for (size_t i = 0; i<this->key_m.size(); i++) {
-            distribution->key[i] = this->key_m[i];
+        distribution->key.resize(this->key_m->size());
+        for (size_t i = 0; i<this->key_m->size(); i++) {
+            distribution->key[i] = this->key_m->at(i);
         }
         distribution->id = this->id_m;
         distribution->x.resize(this->x.size());
@@ -402,10 +403,10 @@ public:
      * value(s), or observed data vector.
      */
     virtual bool set_distribution_links(std::string input_type, Rcpp::IntegerVector ids) {
-        this->input_type_m = input_type;
-        this->key_m.resize(ids.size());
+        this->input_type_m.set(input_type);
+        this->key_m->resize(ids.size());
         for (int i = 0; i < ids.size(); i++) {
-            this->key_m[i] = ids[i];
+            this->key_m->at(i) = ids[i];
         }
         return true;
     }
@@ -514,9 +515,9 @@ public:
         distribution->observed_data_id_m =
                 interface_observed_data_id_m;
         distribution->input_type = this->input_type_m;
-        distribution->key.resize(this->key_m.size());
-        for (size_t i = 0; i<this->key_m.size(); i++) {
-            distribution->key[i] = this->key_m[i];
+        distribution->key.resize(this->key_m->size());
+        for (size_t i = 0; i<this->key_m->size(); i++) {
+            distribution->key[i] = this->key_m->at(i);
         }
         distribution->x.resize(this->x.size());
         for (size_t i = 0; i<this->x.size(); i++) {
@@ -629,10 +630,10 @@ public:
      * value(s), or observed data vector.
      */
     virtual bool set_distribution_links(std::string input_type, Rcpp::IntegerVector ids) {
-        this->input_type_m = input_type;
-        this->key_m.resize(ids.size());
+        this->input_type_m.set(input_type);
+        this->key_m->resize(ids.size());
         for (int i = 0; i < ids.size(); i++) {
-            this->key_m[i] = ids[i];
+            this->key_m->at(i)= ids[i];
         }
         return true;
     }
@@ -674,9 +675,9 @@ public:
         distribution->observed_data_id_m =
                 interface_observed_data_id_m;
         distribution->input_type = this->input_type_m;
-        distribution->key.resize(this->key_m.size());
-        for (size_t i = 0; i<this->key_m.size(); i++) {
-            distribution->key[i] = this->key_m[i];
+        distribution->key.resize(this->key_m->size());
+        for (size_t i = 0; i<this->key_m->size(); i++) {
+            distribution->key[i] = this->key_m->at(i);
         }
         distribution->x.resize(this->x.size());
         for (size_t i = 0; i<this->x.size(); i++) {
@@ -688,14 +689,9 @@ public:
             distribution->expected_values[i] = this->expected_values[i].initial_value_m;
         }
         if (this->dims.size() > 0) {
-            if (this->dims.size() == 2) {
-                distribution->dims.resize(2);
-                distribution->dims[0] = this->dims[0];
-                distribution->dims[1] = this->dims[1];
-            } else {
-                distribution->dims.resize(1);
-                distribution->dims[0] = this->dims[0];
-            }
+            distribution->dims.resize(2);
+            distribution->dims[0] = this->dims[0];
+            distribution->dims[1] = this->dims[1];
         }
 
         info->density_components[distribution->id] = distribution;
