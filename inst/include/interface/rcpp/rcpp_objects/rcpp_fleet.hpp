@@ -74,19 +74,19 @@ class FleetInterface : public FleetInterfaceBase {
     /**
      * @brief The ID of the observed age-composition data object.
      */
-    fims_int interface_observed_agecomp_data_id_m = -999;
+    SharedInt interface_observed_agecomp_data_id_m = -999;
     /**
      * @brief The ID of the observed length-composition data object.
      */
-    fims_int interface_observed_lengthcomp_data_id_m = -999;
+    SharedInt interface_observed_lengthcomp_data_id_m = -999;
     /**
      * @brief The ID of the observed index data object.
      */
-    fims_int interface_observed_index_data_id_m = -999;
+    SharedInt interface_observed_index_data_id_m = -999;
     /**
      * @brief The ID of the selectivity object.
      */
-    fims_int interface_selectivity_id_m = -999;
+    SharedInt interface_selectivity_id_m = -999;
 
 public:
     /**

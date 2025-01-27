@@ -106,6 +106,12 @@ bool CreateTMBModel() {
             fims_info::Information<TMB_FIMS_THIRD_ORDER>::GetInstance();
     d3->CreateModel();
 
+    
+        std::shared_ptr<fims_model::Model < TMB_FIMS_REAL_TYPE>> m0 =
+            fims_model::Model<TMB_FIMS_REAL_TYPE>::GetInstance();
+        
+        std::cout<<"Jnll = "<<m0->Evaluate()<<std::endl;
+    
     return true;
 }
 
