@@ -223,7 +223,7 @@ namespace fims_model {
             }
 
             // Reporting
-#ifdef TMB_MODEL_
+#ifdef TMB_MODEL
             //FIMS_REPORT_F(rec_nll, of);
             //FIMS_REPORT_F(age_comp_nll, of);
             //FIMS_REPORT_F(index_nll, of);
