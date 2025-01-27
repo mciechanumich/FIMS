@@ -156,7 +156,7 @@ print(145)
   cat(module_fields)
   cat("]\n")
     if (field %in% non_standard_field) {
-    cat(typeof(get_n_lengths(data)))
+    cat(get_n_lengths(data))
     cat("\nnon standard\n\n")
     
       # TODO: reorder the list alphabetically
@@ -165,9 +165,9 @@ print(145)
       module[[field]] <- switch(field,
         "ages" = new(RealVector, get_ages(data), length(get_ages(data))),
         "nages" = as.integer(get_n_ages(data)),
-        "nlengths" = as.integer(get_n_lengths(data)),
+        "nlengths" = 0,#as.integer(get_n_lengths(data)),
         "estimate_prop_female" = TRUE,
-        "nyears" = as.integer(get_n_years(data)),
+        "nyears" = 30,#as.integer(get_n_years(data)),
         "nseasons" = 1,
         "nfleets" = length(parameters[["modules"]][["fleets"]]),
         "estimate_log_devs" = module_input[[

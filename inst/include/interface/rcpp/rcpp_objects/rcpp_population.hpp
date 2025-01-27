@@ -75,36 +75,36 @@ public:
     /**
      * @brief The number of age bins.
      */
-    uint32_t nages;
+    SharedInt nages;
     /**
      * @brief The number of fleets.
      */
-    uint32_t nfleets;
+    SharedInt nfleets;
     /**
      * @brief The number of seasons.
      * TODO: Remove seasons because we do not model them.
      */
-    uint32_t nseasons;
+    SharedInt nseasons;
     /**
      * @brief The number of years.
      */
-    uint32_t nyears;
+    SharedInt nyears;
     /**
      * @brief The number of length bins.
      */
-    uint32_t nlengths;
+    SharedInt nlengths;
     /**
      * @brief The ID of the maturity module.
      */
-    uint32_t maturity_id;
+    SharedInt maturity_id;
     /**
      * @brief The ID of the growth module.
      */
-    uint32_t growth_id;
+    SharedInt growth_id;
     /**
      * @brief The ID of the recruitment module.
      */
-    uint32_t recruitment_id;
+    SharedInt recruitment_id;
     /**
      * @brief The natural log of the natural mortality for each year.
      */
@@ -160,10 +160,11 @@ public:
     PopulationInterface() : PopulationInterfaceBase() {
         FIMSRcppInterfaceBase::fims_interface_objects.push_back(std::make_shared<PopulationInterface>(*this));
     }
-
+    
     PopulationInterface(const PopulationInterface& other) :
     PopulationInterfaceBase(other), nages(other.nages), nfleets(other.nfleets), nseasons(other.nseasons), nyears(other.nyears), nlengths(other.nlengths), maturity_id(other.maturity_id), growth_id(other.growth_id), recruitment_id(other.recruitment_id), log_M(other.log_M), log_init_naa(other.log_init_naa), numbers_at_age(other.numbers_at_age), ages(other.ages), derived_ssb(other.derived_ssb), derived_naa(other.derived_naa), derived_biomass(other.derived_biomass), derived_recruitment(other.derived_recruitment), estimated_log_M(other.estimated_log_M), estimated_log_init_naa(other.estimated_log_init_naa), name(other.name) {
     }
+
 
     /**
      * @brief The destructor.
@@ -184,7 +185,7 @@ public:
      * @param maturity_id Unique ID for the Maturity object.
      */
     void SetMaturity(uint32_t maturity_id) {
-        this->maturity_id = maturity_id;
+        this->maturity_id.set(maturity_id);
     }
 
     /**
@@ -192,7 +193,7 @@ public:
      * @param growth_id Unique ID for the growth object.
      */
     void SetGrowth(uint32_t growth_id) {
-        this->growth_id = growth_id;
+        this->growth_id.set(growth_id);
     }
 
     /**
@@ -200,7 +201,7 @@ public:
      * @param recruitment_id Unique ID for the recruitment object.
      */
     void SetRecruitment(uint32_t recruitment_id) {
-        this->recruitment_id = recruitment_id;
+        this->recruitment_id.set(recruitment_id);
     }
 
     /**
@@ -390,12 +391,12 @@ public:
 
         // set relative info
         population->id = this->id;
-        population->nyears = this->nyears;
-        population->nfleets = this->nfleets;
-        population->nseasons = this->nseasons;
-        population->nages = this->nages;
+        population->nyears = this->nyears.get();
+        population->nfleets = this->nfleets.get();
+        population->nseasons = this->nseasons.get();
+        population->nages = this->nages.get();
         if (this->nages == this->ages.size()) {
-            population->ages.resize(this->nages);
+            population->ages.resize(this->nages.get());
         } else {
             warning("The ages vector is not of size nages.");
         }
@@ -422,6 +423,7 @@ public:
             }
         }
         info->variable_map[this->log_init_naa.id_m] = &(population)->log_init_naa;
+        std::cout<<population->ages.size()<<" ?= "<<ages.size()<<std::endl;
         for (int i = 0; i < ages.size(); i++) {
             population->ages[i] = this->ages[i];
         }

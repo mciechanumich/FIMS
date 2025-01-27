@@ -592,6 +592,7 @@ public:
      */
     DmultinomDistributionsInterface() : DistributionsInterfaceBase() {
         FIMSRcppInterfaceBase::fims_interface_objects.push_back(std::make_shared<DmultinomDistributionsInterface>(*this));
+            std::cout<<"pushing DmultinomDistributionsInterface "<< FIMSRcppInterfaceBase::fims_interface_objects.size()<<std::endl;
     }
 
     DmultinomDistributionsInterface(const DmultinomDistributionsInterface& other) :
@@ -666,10 +667,10 @@ public:
     bool add_to_fims_tmb_internal() {
         std::shared_ptr<fims_info::Information < Type>> info =
                 fims_info::Information<Type>::GetInstance();
-
+        std::cout<<__LINE__<<std::endl;
         std::shared_ptr<fims_distributions::MultinomialLPMF < Type>> distribution =
                 std::make_shared<fims_distributions::MultinomialLPMF < Type >> ();
-
+    std::cout<<__LINE__<<std::endl;
         distribution->id = this->id_m;
         distribution->observed_data_id_m =
                 interface_observed_data_id_m;
@@ -678,21 +679,30 @@ public:
         for (size_t i = 0; i<this->key_m.size(); i++) {
             distribution->key[i] = this->key_m[i];
         }
+            std::cout<<__LINE__<<std::endl;
         distribution->x.resize(this->x.size());
         for (size_t i = 0; i<this->x.size(); i++) {
             distribution->x[i] = this->x[i].initial_value_m;
         }
+            std::cout<<__LINE__<<std::endl;
         // set relative info
         distribution->expected_values.resize(this->expected_values.size());
         for (size_t i = 0; i<this->expected_values.size(); i++) {
             distribution->expected_values[i] = this->expected_values[i].initial_value_m;
         }
+            std::cout<<__LINE__<<std::endl;
         if (this->dims.size() > 0) {
+            std::cout<<"dims size = "<<this->dims.size()<<std::endl;
+            std::cout<<__LINE__<<std::endl;
             distribution->dims.resize(2);
+            std::cout<<__LINE__<<std::endl;
             distribution->dims[0] = this->dims[0];
+            std::cout<<__LINE__<<std::endl;
+            if(this->dims.size() > 1)
             distribution->dims[1] = this->dims[1];
+            std::cout<<__LINE__<<std::endl;
         }
-
+    std::cout<<__LINE__<<std::endl;
         info->density_components[distribution->id] = distribution;
 
         return true;

@@ -27,7 +27,6 @@
 #' @export Parameter
 #' @export ParameterVector
 #' @export RealVector
-#' @export CreateVector
 #' @export SharedInt
 #' @export SharedReal
 #' @export Population

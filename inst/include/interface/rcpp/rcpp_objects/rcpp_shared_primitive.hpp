@@ -3,9 +3,6 @@
 
 #include <memory>
 
-
-
-
 class SharedInt {
 private:
     std::shared_ptr<int> value;
@@ -238,7 +235,6 @@ public:
         return *value >= other;
     }
 
-
     friend std::ostream& operator<<(std::ostream& os, const SharedInt& sp) {
         os << *sp.value;
         return os;
@@ -248,11 +244,9 @@ public:
 
 // Non-member operators for primitive + SharedPrimitive
 
-
 SharedInt operator+(const int& lhs, const SharedInt& rhs) {
     return SharedInt(lhs + rhs.get());
 }
-
 
 SharedInt operator-(const int& lhs, const SharedInt& rhs) {
     return SharedInt(lhs - rhs.get());
@@ -266,6 +260,21 @@ SharedInt operator/(const int& lhs, const SharedInt& rhs) {
     return SharedInt(lhs / rhs.get());
 }
 
+bool operator<(const int& lhs, const SharedInt& rhs) {
+    return (lhs < rhs.get());
+}
+
+bool operator<=(const int& lhs, const SharedInt& rhs) {
+    return (lhs <= rhs.get());
+}
+
+bool operator>(const int& lhs, const SharedInt& rhs) {
+    return (lhs > rhs.get());
+}
+
+bool operator>=(const int& lhs, const SharedInt& rhs) {
+    return (lhs >= rhs.get());
+}
 
 class SharedReal {
 private:
@@ -499,14 +508,11 @@ public:
         return *value >= other;
     }
 
-
     friend std::ostream& operator<<(std::ostream& os, const SharedReal& sp) {
         os << *sp.value;
         return os;
     }
 };
-
-
 
 SharedReal operator+(const double& lhs, const SharedReal& rhs) {
     return SharedReal(lhs + rhs.get());
@@ -515,7 +521,6 @@ SharedReal operator+(const double& lhs, const SharedReal& rhs) {
 SharedReal operator-(const double& lhs, const SharedReal& rhs) {
     return SharedReal(lhs - rhs.get());
 }
-
 
 SharedReal operator*(const double& lhs, const SharedReal& rhs) {
     return SharedReal(lhs * rhs.get());

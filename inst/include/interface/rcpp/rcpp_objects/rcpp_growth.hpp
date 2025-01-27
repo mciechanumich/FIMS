@@ -81,16 +81,16 @@ public:
     /**
      * @brief Weights (mt) for each age class.
      */
-    std::vector<double> weights;
+    RealVector weights;
     /**
      * @brief Ages (years) for each age class.
      */
-    std::vector<double> ages;
+    RealVector ages;
     /**
      * @brief A map of empirical weight-at-age values. TODO: describe this
      * parameter better.
      */
-    std::map<double, double> ewaa;
+    std::shared_ptr<std::map<double, double> > ewaa;
     /**
      * @brief Have weight and age vectors been set? The default is false.
      */
@@ -100,6 +100,7 @@ public:
      * @brief The constructor.
      */
     EWAAGrowthInterface() : GrowthInterfaceBase() {
+        this->ewaa = std::make_shared< std::map<double, double> > ();
         FIMSRcppInterfaceBase::fims_interface_objects.push_back(std::make_shared<EWAAGrowthInterface>(*this));
     }
 
@@ -127,8 +128,8 @@ public:
      * @param ages Type vector of ages.
      * @return std::map<T, T>.
      */
-    inline std::map<double, double> make_map(std::vector<double> ages,
-            std::vector<double> weights) {
+    inline std::map<double, double> make_map(RealVector ages,
+            RealVector weights) {
         std::map<double, double> mymap;
         for (uint32_t i = 0; i < ages.size(); i++) {
             mymap.insert(std::pair<double, double>(ages[i], weights[i]));
@@ -145,7 +146,7 @@ public:
         fims_popdy::EWAAgrowth<double> EWAAGrowth;
 
         if (initialized == false) {
-            this->ewaa = make_map(this->ages, this->weights);
+            EWAAGrowth.ewaa  = make_map(this->ages, this->weights);
             // Check that ages and weights vector are the same length
             if (this->ages.size() != this->weights.size()) {
                 Rcpp::stop("ages and weights must be the same length");
@@ -154,7 +155,7 @@ public:
         } else {
             Rcpp::stop("this empirical weight at age object is already initialized");
         }
-        EWAAGrowth.ewaa = this->ewaa;
+//        EWAAGrowth.ewaa = *this->ewaa;
         return EWAAGrowth.evaluate(age);
     }
 

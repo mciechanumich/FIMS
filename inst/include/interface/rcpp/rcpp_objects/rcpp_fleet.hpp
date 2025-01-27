@@ -203,7 +203,7 @@ public:
      * @param observed_agecomp_data_id Unique ID for the observed data object.
      */
     void SetObservedAgeCompData(int observed_agecomp_data_id) {
-        interface_observed_agecomp_data_id_m = observed_agecomp_data_id;
+        interface_observed_agecomp_data_id_m.set(observed_agecomp_data_id);
     }
 
     /**
@@ -211,7 +211,7 @@ public:
      * @param observed_lengthcomp_data_id Unique ID for the observed data object.
      */
     void SetObservedLengthCompData(int observed_lengthcomp_data_id) {
-        interface_observed_lengthcomp_data_id_m = observed_lengthcomp_data_id;
+        interface_observed_lengthcomp_data_id_m.set(observed_lengthcomp_data_id);
     }
 
     /**
@@ -219,7 +219,7 @@ public:
      * @param observed_index_data_id Unique ID for the observed data object.
      */
     void SetObservedIndexData(int observed_index_data_id) {
-        interface_observed_index_data_id_m = observed_index_data_id;
+        interface_observed_index_data_id_m.set(observed_index_data_id);
     }
 
     /**
