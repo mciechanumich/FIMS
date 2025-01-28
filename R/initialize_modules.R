@@ -24,7 +24,7 @@ initialize_module <- function(parameters, data, module_name) {
   # # Retrieve all objects in the environment
   # objs <- mget(ls())
   # modules <- get_rcpp_modules(objs)
-print(27)
+
   # Input checks
   # Check if parameters is a list and contains the necessary sub-elements
   if (!is.list(parameters)) {
@@ -35,13 +35,11 @@ print(27)
       lists."
     ))
   }
-  
-  print(39)
   # Validate module_name
   if (!is.character(module_name) || length(module_name) != 1) {
     cli::cli_abort("{.var module_name} must be a single character string.")
   }
-print(44)
+
   # Check if module_name exists in the parameters list
   if (!module_name %in% c(
     names(parameters[["parameters"]]),
@@ -49,7 +47,7 @@ print(44)
   )) {
     cli::cli_abort("{.var module_name} is missing from the {.var parameters}.")
   }
-print(52)
+
   # Define module class and fields
   module_class_name <- if (module_name == "population") {
     "Population"
@@ -66,12 +64,12 @@ print(52)
   } else {
     parameters[["modules"]][[module_name]][["form"]]
   }
-print(69)
+
   module_class <- get(module_class_name)
   module_fields <- names(module_class@fields)
   module <- methods::new(module_class)
   module_input <- parameters[["parameters"]][[module_name]]
-print(74)
+
   if (module_class_name == "Fleet") {
     module_fields <- setdiff(module_fields, c(
       "log_expected_index",
@@ -94,7 +92,7 @@ print(74)
         "log_Fmort"
       ))
     }
-print(97)
+
     # TODO: refactor "age-to-length-conversion" in FIMSFrame data and
     # "age_length_conversion_matrix" in the Rcpp interface to
     # "age_to_legnth_conversion" for consistency
@@ -118,7 +116,7 @@ print(97)
         "nlengths"
       ))
     }
-print(121)
+
     module_fields <- setdiff(module_fields, c(
       "age_length_conversion_matrix",
       "proportion_catch_numbers_at_length"
@@ -142,38 +140,28 @@ print(121)
   #   - Reconsider exposing `log_expected_index` and
   #     `proportion_catch_numbers_at_age` to users. Their IDs are linked with
   #     index and agecomp distributions. No input values are required.
-print(145)
+
   non_standard_field <- c(
     "ages", "nages", "nlengths",
     "estimate_prop_female",
     "nyears", "nseasons", "nfleets", "estimate_log_devs", "weights",
     "is_survey", "estimate_q", "random_q"
   )
-  print(152)
   for (field in module_fields) {
-  cat(field)
-  cat(" of [")
-  cat(module_fields)
-  cat("]\n")
     if (field %in% non_standard_field) {
-    cat(get_n_lengths(data))
-    cat("\nnon standard\n\n")
-    
       # TODO: reorder the list alphabetically
-        tryCatch(
-        {
       module[[field]] <- switch(field,
-        "ages" = new(RealVector, get_ages(data), length(get_ages(data))),
-        "nages" = as.integer(get_n_ages(data)),
-        "nlengths" = 0,#as.integer(get_n_lengths(data)),
+        "ages" = get_ages(data),
+        "nages" = get_n_ages(data),
+        "nlengths" = get_n_lengths(data),
         "estimate_prop_female" = TRUE,
-        "nyears" = 30,#as.integer(get_n_years(data)),
+        "nyears" = get_n_years(data),
         "nseasons" = 1,
         "nfleets" = length(parameters[["modules"]][["fleets"]]),
         "estimate_log_devs" = module_input[[
           paste0(module_class_name, ".estimate_log_devs")
         ]],
-        "weights" = new(RealVector, m_weight_at_age(data), length(m_weight_at_age(data))),
+        "weights" = m_weight_at_age(data),
         "is_survey" = !("landings" %in% fleet_types),
         "estimate_q" = module_input[[
           paste0(module_class_name, ".log_q.estimated")
@@ -184,44 +172,15 @@ print(145)
           module."
         ))
       )
-      },
-           error = function(cond) {
-            message(paste("error occured processing:", field))
-            message(conditionMessage(cond))
-            # Choose a return value in case of error
-            NA
-        },
-        warning = function(cond) {
-            message(paste("field caused a warning:", field))
-            message(conditionMessage(cond))
-            # Choose a return value in case of warning
-            NULL
-        },
-        finally = {
-            # NOTE:
-            # Here goes everything that should be executed at the end,
-            # regardless of success or error.
-            # If you want more than one expression to be executed, then you
-            # need to wrap them in curly brackets ({...}); otherwise you could
-            # just have written 'finally = <expression>' 
-            message(paste("Successfully processed field:", field))
-
-        }
-        )
-      print(178)
     } else {
-    cat("standard\n")
-    print(180)
       set_param_vector(
         field = field,
         module = module,
         module_input = module_input
       )
-      print(185)
     }
-     print(188)
   }
-print(190)
+
   return(module)
 }
 
@@ -247,10 +206,11 @@ print(190)
 #' The initialized distribution module as an object.
 #' @noRd
 initialize_distribution <- function(
-    module_input,
-    distribution_name,
-    distribution_type = c("data", "process"),
-    linked_ids) {
+  module_input,
+  distribution_name,
+  distribution_type = c("data", "process"),
+  linked_ids
+) {
   # Input checks
   # Check if distribution_name is provided
   if (is.null(distribution_name)) {
@@ -509,9 +469,9 @@ initialize_index <- function(data, fleet_name) {
   module <- methods::new(Index, get_n_years(data))
 
   if ("landings" %in% fleet_type) {
-    module[["index_data"]] <- new(RealVector,m_landings(data, fleet_name), length(m_landings(data, fleet_name)))
+    module[["index_data"]] <- m_landings(data, fleet_name)
   } else if ("index" %in% fleet_type) {
-    module[["index_data"]] <- new(RealVector,m_index(data, fleet_name),length(m_index(data, fleet_name)))
+    module[["index_data"]] <- m_index(data, fleet_name)
   } else {
     cli::cli_abort(c(
       "Fleet type `{fleet_type}` is not valid for index module initialization.
@@ -554,7 +514,7 @@ initialize_age_comp <- function(data, fleet_name) {
   # TODO: review the AgeComp interface, do we want to add
   # `age_comp_data` as an argument?
 
-  age_comp_temp <- age_comp_data *
+  module$age_comp_data <- age_comp_data *
     get_data(data) |>
       dplyr::filter(
         name == fleet_name,
@@ -564,9 +524,6 @@ initialize_age_comp <- function(data, fleet_name) {
         valid_n = ifelse(value == -999, 1, uncertainty)
       ) |>
       dplyr::pull(valid_n)
-
-module$age_comp_data <- new(RealVector, age_comp_temp, length(age_comp_temp))
-
 
   return(module)
 }
@@ -605,7 +562,7 @@ initialize_length_comp <- function(data, fleet_name) {
   # TODO: review the LengthComp interface, do we want to add
   # `age_comp_data` as an argument?
 
-  length_comp_temp <- length_comp_data *
+  module$length_comp_data <- length_comp_data *
     get_data(data) |>
       dplyr::filter(
         name == fleet_name,
@@ -615,8 +572,6 @@ initialize_length_comp <- function(data, fleet_name) {
         valid_n = ifelse(value == -999, 1, uncertainty)
       ) |>
       dplyr::pull(valid_n)
-      
-  module$length_comp_data <- new(RealVector, length_comp_temp, length(length_comp_temp))
 
   return(module)
 }
