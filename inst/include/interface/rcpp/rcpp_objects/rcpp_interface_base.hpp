@@ -482,6 +482,13 @@ public:
         return this->id_m;
     }
 
+    void fromR(const Rcpp::NumericVector& orig){
+        this->storage_m->resize(orig.size());
+        for(size_t i = 0; i < this->storage_m->size(); i++){
+            this->storage_m->at(i) = orig[i];
+        }
+    }
+    
     /**
      * @brief The accessor where the first index starts is zero.
      * @param pos The position of the RealVector that you want returned.

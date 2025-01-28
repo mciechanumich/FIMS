@@ -106,11 +106,11 @@ bool CreateTMBModel() {
             fims_info::Information<TMB_FIMS_THIRD_ORDER>::GetInstance();
     d3->CreateModel();
 
-    
-        std::shared_ptr<fims_model::Model < TMB_FIMS_REAL_TYPE>> m0 =
+
+    std::shared_ptr<fims_model::Model < TMB_FIMS_REAL_TYPE>> m0 =
             fims_model::Model<TMB_FIMS_REAL_TYPE>::GetInstance();
-        
-    
+
+
     return true;
 }
 
@@ -574,8 +574,6 @@ void log_error(std::string log_entry) {
     fims::FIMSLog::fims_log->error_message(log_entry, -1, "R_env", ret.c_str());
 }
 
-
-
 RCPP_EXPOSED_CLASS(Parameter)
 RCPP_EXPOSED_CLASS(ParameterVector)
 RCPP_EXPOSED_CLASS(RealVector)
@@ -721,6 +719,8 @@ RCPP_MODULE(fims) {
             "An internal accessor for calling a position of a RealVector from R.")
             .method("set", &RealVector::set,
             "An internal setter for setting a position of a RealVector from R.")
+            .method("fromR", &RealVector::fromR,
+            "Initializes the RealVector from the values of a R vector.")
             .method("show", &RealVector::show,
             "The printing methods for a RealVector.")
             .method("at", &RealVector::at,
@@ -739,8 +739,8 @@ RCPP_MODULE(fims) {
             .constructor<int>()
             .method("get", &SharedInt::get)
             .method("set", &SharedInt::set);
-    
-       Rcpp::class_<SharedReal>(
+
+    Rcpp::class_<SharedReal>(
             "SharedReal",
             "An RcppInterface class that defines the SharedReal class.")
             .constructor()
