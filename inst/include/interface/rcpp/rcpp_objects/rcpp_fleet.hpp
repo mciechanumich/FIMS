@@ -436,7 +436,7 @@ public:
             }
             ss << this->derived_index[this->derived_index.size() - 1] << "]\n";
         }
-        ss << " },\n";
+        ss << " }\n";
 
         return ss.str();
 

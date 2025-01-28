@@ -128,9 +128,22 @@ uint32_t Parameter::id_g = 0;
  * @return std::ostream& 
  */
 std::ostream& operator<<(std::ostream& out, const Parameter& p) {
-    out << "{id:" << p.id_m << ",\nvalue:" << p.initial_value_m
-            << ",\nestimated_value:" << p.final_value_m << ",\nmin:"
-            << p.min_m << ",\nmax:" << p.max_m << ",\nestimated:" << p.estimated_m << "\n}";
+    out << "{\"id\": " << p.id_m << ",\n\"value\": " << p.initial_value_m
+            << ",\n\"estimated_value\": " << p.final_value_m << ",\n\"min\": ";
+    if (p.min_m == -std::numeric_limits<double>::infinity()) {
+        out << "\"-Infinity\"";
+    } else {
+        out << p.min_m;
+    }
+    out << ",\n\"max\": ";
+    if (p.max_m == std::numeric_limits<double>::infinity()) {
+        out <<  "\"Infinity\"";
+    } else {
+        out << p.max_m;
+    }
+
+    out << ",\n\"estimated\": " << p.estimated_m << "\n}";
+
     return out;
 }
 
@@ -383,6 +396,7 @@ std::ostream& operator<<(std::ostream& out, ParameterVector& v) {
         out << v[i] << ", ";
     }
     out << v[size - 1] << "]";
+
     return out;
 }
 
@@ -482,13 +496,13 @@ public:
         return this->id_m;
     }
 
-    void fromR(const Rcpp::NumericVector& orig){
+    void fromR(const Rcpp::NumericVector& orig) {
         this->storage_m->resize(orig.size());
-        for(size_t i = 0; i < this->storage_m->size(); i++){
+        for (size_t i = 0; i < this->storage_m->size(); i++) {
             this->storage_m->at(i) = orig[i];
         }
     }
-    
+
     /**
      * @brief The accessor where the first index starts is zero.
      * @param pos The position of the RealVector that you want returned.
@@ -618,7 +632,7 @@ public:
      * @brief Convert the data to json representation for the output.
      */
     virtual std::string to_json() {
-        return "";
+        return "{\"module\":\"not yet implemented\"}";
     }
 };
 std::vector<std::shared_ptr<FIMSRcppInterfaceBase> >

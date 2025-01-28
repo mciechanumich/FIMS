@@ -493,7 +493,7 @@ public:
             }
             ss << this->lpdf_vec[this->lpdf_vec.size() - 1] << "]\n";
         }
-        ss << " }\n]";
+        ss << " }\n";
 
         return ss.str();
     }
@@ -659,6 +659,9 @@ public:
         dmultinom.dims[0] = this->dims[0];
         dmultinom.dims[1] = this->dims[1];
         return dmultinom.evaluate();
+    }
+    virtual std::string to_json() {
+        return "\"module\": {\"name\": \"multinomial\"}";
     }
 
 #ifdef TMB_MODEL

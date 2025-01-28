@@ -190,13 +190,13 @@ public:
         ss << "   \"name\": \"inflection_point\",\n";
         ss << "   \"id\":" << this->inflection_point.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
-        ss << "   \"values\":" << this->inflection_point << ",\n },\n";
+        ss << "   \"values\":" << this->inflection_point << "\n },\n";
 
         ss << " \"parameter\": {\n";
         ss << "   \"name\": \"slope\",\n";
         ss << "   \"id\":" << this->slope.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
-        ss << "   \"values\":" << this->slope << ",\n}\n";
+        ss << "   \"values\":" << this->slope << "\n}\n";
 
         ss << "}";
 
@@ -405,25 +405,25 @@ public:
         ss << "   \"name\": \"inflection_point_asc\",\n";
         ss << "   \"id\":" << this->inflection_point_asc.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
-        ss << "   \"values\":" << this->inflection_point_asc << ",\n},\n";
+        ss << "   \"values\":" << this->inflection_point_asc << "\n},\n";
 
         ss << " \"parameter\": {\n";
         ss << "   \"name\": \"slope_asc\",\n";
         ss << "   \"id\":" << this->slope_asc.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
-        ss << "   \"values\":" << this->slope_asc << ",\n},\n";
+        ss << "   \"values\":" << this->slope_asc << "\n},\n";
 
         ss << " \"parameter\": {\n";
         ss << "   \"name\": \"inflection_point_desc\",\n";
         ss << "   \"id\":" << this->inflection_point_desc.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
-        ss << "   \"values\":" << this->inflection_point_desc << ",\n},\n";
+        ss << "   \"values\":" << this->inflection_point_desc << "\n},\n";
 
         ss << " \"parameter\": {\n";
         ss << "   \"name\": \"slope_desc\",\n";
         ss << "   \"id\":" << this->slope_desc.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
-        ss << "   \"values\":" << this->slope_desc << ",\n}\n";
+        ss << "   \"values\":" << this->slope_desc << "\n}\n";
 
 
         ss << "}";

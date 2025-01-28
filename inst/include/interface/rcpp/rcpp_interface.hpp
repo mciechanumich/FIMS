@@ -126,7 +126,7 @@ void finalize_objects(Rcpp::NumericVector p) {
 
     std::shared_ptr<fims_model::Model < double>> model =
             fims_model::Model<double>::GetInstance();
-
+    model->do_tmb_reporting = false;
     for (size_t i = 0; i < information->fixed_effects_parameters.size(); i++) {
         *information->fixed_effects_parameters[i] = p[i];
     }
@@ -359,6 +359,9 @@ void clear_internal() {
     std::shared_ptr<fims_info::Information < Type>> d0 =
             fims_info::Information<Type>::GetInstance();
     d0->Clear();
+    
+    
+    
 }
 
 /**
@@ -441,7 +444,13 @@ void clear() {
 
     DmultinomDistributionsInterface::id_g = 1;
     DmultinomDistributionsInterface::live_objects.clear();
-
+#ifdef TMB_MODEL
+    
+    std::shared_ptr<fims_model::Model < double>> model =
+            fims_model::Model<double>::GetInstance();
+    model->do_tmb_reporting = false;
+    
+#endif
     clear_internal<TMB_FIMS_REAL_TYPE>();
     clear_internal<TMB_FIMS_FIRST_ORDER>();
     clear_internal<TMB_FIMS_SECOND_ORDER>();

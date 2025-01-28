@@ -395,7 +395,7 @@ public:
         population->nfleets = this->nfleets.get();
         population->nseasons = this->nseasons.get();
         population->nages = this->nages.get();
-        if (this->nages == this->ages.size()) {
+        if (this->nages.get() == this->ages.size()) {
             population->ages.resize(this->nages.get());
         } else {
             warning("The ages vector is not of size nages.");
