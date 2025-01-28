@@ -173,7 +173,6 @@ namespace fims_model {
             int n_data = 0;
             for (d_it = this->fims_information->density_components.begin();
                     d_it != this->fims_information->density_components.end(); ++d_it) {
-                std::cout<<"this->fims_information->density_components"<<std::endl;
                 std::shared_ptr<fims_distributions::DensityComponentBase<Type> > d = (*d_it).second;
 #ifdef TMB_MODEL
                 d->of = this->of;
@@ -225,7 +224,7 @@ namespace fims_model {
             }
 
             // Reporting
-#ifdef TMB_MODEL_
+#ifdef TMB_MODEL
             //FIMS_REPORT_F(rec_nll, of);
             //FIMS_REPORT_F(age_comp_nll, of);
             //FIMS_REPORT_F(index_nll, of);
