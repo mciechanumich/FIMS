@@ -213,7 +213,7 @@ public:
     virtual std::string to_json() {
         std::stringstream ss;
 
-        ss << "\"module\" : {\n";
+        ss << "{\n";
         ss << " \"name\": \"recruitment\",\n";
         ss << " \"type\": \"Beverton--Holt\",\n";
         ss << " \"id\": " << this->id << ",\n";
@@ -234,7 +234,7 @@ public:
         ss << "   \"name\": \"log_devs\",\n";
         ss << "   \"id\":" << this->log_devs.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
-        ss << "   \"values\":" << this->log_devs << "\n },\n";
+        ss << "   \"values\":" << this->log_devs << "\n }\n}";
 
         return ss.str();
     }

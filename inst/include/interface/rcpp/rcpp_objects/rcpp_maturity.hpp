@@ -178,7 +178,7 @@ public:
      */
     virtual std::string to_json() {
         std::stringstream ss;
-        ss << "\"module\" : {\n";
+        ss << "{\n";
         ss << " \"name\": \"maturity\",\n";
         ss << " \"type\": \"logistic\",\n";
         ss << " \"id\": " << this->id << ",\n";
@@ -187,13 +187,13 @@ public:
         ss << "   \"name\": \"inflection_point\",\n";
         ss << "   \"id\":" << this->inflection_point.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
-        ss << "   \"values\":" << this->inflection_point << ",\n";
+        ss << "   \"values\":" << this->inflection_point << "},\n";
 
         ss << " \"parameter\": {\n";
         ss << "   \"name\": \"slope\",\n";
         ss << "   \"id\":" << this->slope.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
-        ss << "   \"values\":" << this->slope << ",\n";
+        ss << "   \"values\":" << this->slope << "}\n";
 
         ss << "}";
 

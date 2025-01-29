@@ -137,7 +137,7 @@ public:
     virtual std::string to_json() {
         std::stringstream ss;
 
-        ss << "\"module\" : {\n";
+        ss << "{\n";
         ss << " \"name\": \"data\",\n";
         ss << " \"type\" : \"AgeComp\",\n";
         ss << " \"id\":" << this->id << ",\n";
@@ -249,10 +249,10 @@ public:
      * rank of 2, the dimensions by printing ymax and lmax, followed by the data
      * values themselves. This string is formatted for a json file.
      */
-    virtual std::string to_json() {
+    virtual std::string to_json_() {
         std::stringstream ss;
 
-        ss << "\"module\" : {\n";
+        ss << "{\n";
         ss << " \"name\": \"data\",\n";
         ss << " \"type\" : \"LengthComp\",\n";
         ss << " \"id\":" << this->id << ",\n";
@@ -353,7 +353,7 @@ public:
     virtual std::string to_json() {
         std::stringstream ss;
 
-        ss << "\"module\" : {\n";
+        ss << "{\n";
         ss << " \"name\": \"data\",\n";
         ss << " \"type\": \"Index\",\n";
         ss << " \"id\": " << this->id << ",\n";

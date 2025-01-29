@@ -340,7 +340,7 @@ public:
     virtual std::string to_json() {
         std::stringstream ss;
 
-        ss << "\"module\" : {\n";
+        ss << "{\n";
         ss << " \"name\" : \"Fleet\",\n";
 
         ss << " \"type\" : \"fleet\",\n";
@@ -436,7 +436,7 @@ public:
             }
             ss << this->derived_index[this->derived_index.size() - 1] << "]\n";
         }
-        ss << " }\n";
+        ss << " }\n}";
 
         return ss.str();
 

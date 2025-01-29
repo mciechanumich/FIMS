@@ -632,7 +632,7 @@ public:
      * @brief Convert the data to json representation for the output.
      */
     virtual std::string to_json() {
-        return "{\"module\":\"not yet implemented\"}";
+        return "{\"name\" : \"not yet implemented\"}";
     }
 };
 std::vector<std::shared_ptr<FIMSRcppInterfaceBase> >

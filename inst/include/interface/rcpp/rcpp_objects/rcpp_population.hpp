@@ -299,7 +299,7 @@ public:
     virtual std::string to_json() {
         std::stringstream ss;
 
-        ss << "\"module\" : {\n";
+        ss << "{\n";
         ss << " \"name\" : \"Population\",\n";
 
         ss << " \"type\" : \"population\",\n";

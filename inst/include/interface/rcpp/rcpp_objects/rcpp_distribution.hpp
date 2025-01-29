@@ -248,7 +248,7 @@ public:
     virtual std::string to_json() {
         std::stringstream ss;
 
-        ss << "\"module\" : {\n";
+        ss << "{\n";
         ss << " \"name\": \"DnormDistribution\",\n";
         ss << " \"type\": \"normal\",\n";
         ss << " \"id\": " << this->id_m << ",\n";
@@ -264,7 +264,7 @@ public:
             }
             ss << this->lpdf_vec[this->lpdf_vec.size() - 1] << "]\n";
         }
-        ss << " }\n]";
+        ss << " }}\n";
 
         return ss.str();
     }
@@ -477,7 +477,7 @@ public:
     virtual std::string to_json() {
         std::stringstream ss;
 
-        ss << "\"module\" : {\n";
+        ss << "{\n";
         ss << " \"name\": \"LogNormalLPDF\",\n";
         ss << " \"type\": \"log_normal\",\n";
         ss << " \"id\": " << this->id_m << ",\n";
@@ -493,7 +493,7 @@ public:
             }
             ss << this->lpdf_vec[this->lpdf_vec.size() - 1] << "]\n";
         }
-        ss << " }\n";
+        ss << " }}\n";
 
         return ss.str();
     }
@@ -661,7 +661,7 @@ public:
         return dmultinom.evaluate();
     }
     virtual std::string to_json() {
-        return "\"module\": {\"name\": \"multinomial\"}";
+        return "{\"name\": \"multinomial\"}";
     }
 
 #ifdef TMB_MODEL

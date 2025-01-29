@@ -168,7 +168,7 @@ public:
      */
     virtual std::string to_json() {
         std::stringstream ss;
-        ss << "\"module\" : {\n";
+        ss << "{\n";
         ss << " \"name\": \"growth\",\n";
         ss << " \"type\" : \"EWAA\",\n";
         ss << " \"id\":" << this->id << ",\n";

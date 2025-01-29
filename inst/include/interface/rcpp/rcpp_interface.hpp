@@ -281,13 +281,17 @@ std::string get_output() {
         } else {
             ss << "],";
         }
+        
+        ss<<"\"modules\" : [\n";
         size_t length = FIMSRcppInterfaceBase::fims_interface_objects.size();
         for (size_t i = 0; i < length - 1; i++) {
             ss << FIMSRcppInterfaceBase::fims_interface_objects[i]->to_json() << ",\n";
         }
 
-        ss << FIMSRcppInterfaceBase::fims_interface_objects[length - 1]->to_json() << "\n}";
+        ss << FIMSRcppInterfaceBase::fims_interface_objects[length - 1]->to_json() << "\n]\n}";
 
+        
+        
         ret = fims::JsonParser::PrettyFormatJSON(ss.str());
     } else {
         Rcpp::Rcout << "Invalid request to \"get_output()\". Please call finalize() first.";
