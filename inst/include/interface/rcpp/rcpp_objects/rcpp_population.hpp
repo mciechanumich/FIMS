@@ -309,19 +309,19 @@ public:
         ss << " \"growth_id\": " << this->growth_id << ",\n";
         ss << " \"maturity_id\": " << this->maturity_id << ",\n";
 
-        ss << " \"parameter\": {\n";
+        ss << " \"parameters\": [\n{\n";
         ss << " \"name\": \"log_M\",\n";
         ss << " \"id\":" << -999 << ",\n";
         ss << " \"type\": \"vector\",\n";
         ss << " \"values\": " << this->log_M << "\n},\n";
 
-        ss << " \"parameter\": {\n";
+        ss << "{\n";
         ss << "  \"name\": \"log_init_naa\",\n";
         ss << "  \"id\":" << -999 << ",\n";
         ss << "  \"type\": \"vector\",\n";
-        ss << "  \"values\":" << this->log_init_naa << " \n},\n";
+        ss << "  \"values\":" << this->log_init_naa << " \n}],\n";
 
-        ss << " \"derived_quantity\": {\n";
+        ss << " \"derived_quantities\": [{\n";
         ss << "  \"name\": \"ssb\",\n";
         ss << "  \"values\":[";
         if (this->derived_ssb.size() == 0) {
@@ -334,7 +334,7 @@ public:
         }
         ss << " },\n";
 
-        ss << " \"derived_quantity\": {\n";
+        ss << "{\n";
         ss << "   \"name\": \"naa\",\n";
         ss << "   \"values\":[";
         if (this->derived_naa.size() == 0) {
@@ -347,7 +347,7 @@ public:
         }
         ss << " },\n";
 
-        ss << " \"derived_quantity\": {\n";
+        ss << "{\n";
         ss << "   \"name\": \"biomass\",\n";
         ss << "   \"values\":[";
         if (this->derived_biomass.size() == 0) {
@@ -360,7 +360,7 @@ public:
         }
         ss << " },\n";
 
-        ss << " \"derived_quantity\": {\n";
+        ss << "{\n";
         ss << "   \"name\": \"recruitment\",\n";
         ss << "   \"values\":[";
         if (this->derived_recruitment.size() == 0) {
@@ -371,7 +371,7 @@ public:
             }
             ss << this->derived_recruitment[this->derived_recruitment.size() - 1] << "]\n";
         }
-        ss << " }\n";
+        ss << " }\n]\n";
 
         ss << "}";
 

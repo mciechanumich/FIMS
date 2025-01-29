@@ -183,19 +183,19 @@ public:
         ss << " \"type\": \"logistic\",\n";
         ss << " \"id\": " << this->id << ",\n";
 
-        ss << " \"parameter\": {\n";
+        ss << " \"parameters\": [\n{\n";
         ss << "   \"name\": \"inflection_point\",\n";
         ss << "   \"id\":" << this->inflection_point.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
         ss << "   \"values\":" << this->inflection_point << "},\n";
 
-        ss << " \"parameter\": {\n";
+        ss << "{\n";
         ss << "   \"name\": \"slope\",\n";
         ss << "   \"id\":" << this->slope.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
         ss << "   \"values\":" << this->slope << "}\n";
 
-        ss << "}";
+        ss << "]}";
 
         return ss.str();
     }

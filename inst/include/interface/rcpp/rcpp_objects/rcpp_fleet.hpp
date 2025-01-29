@@ -346,20 +346,21 @@ public:
         ss << " \"type\" : \"fleet\",\n";
         ss << " \"tag\" : \"" << this->name << "\",\n";
         ss << " \"id\": " << this->id << ",\n";
-
-        ss << " \"parameter\": {\n";
+        ss << "\"parameters\": [\n";
+        ss << "{\n";
         ss << " \"name\": \"log_Fmort\",\n";
         ss << " \"id\":" << this->log_Fmort.id_m << ",\n";
         ss << " \"type\": \"vector\",\n";
         ss << " \"values\": " << this->log_Fmort << "\n},\n";
 
-        ss << " \"parameter\": {\n";
+        ss << " {\n";
         ss << " \"name\": \"log_q\",\n";
         ss << " \"id\":" << this->log_q.id_m << ",\n";
         ss << " \"type\": \"vector\",\n";
-        ss << " \"values\": " << this->log_q << "\n},\n";
-
-        ss << " \"derived_quantity\": {\n";
+        ss << " \"values\": " << this->log_q << "\n}],\n";
+        
+        ss << " \"derived_quantities\":[\n";
+        ss << "{\n";
         ss << "  \"name\": \"cnaa\",\n";
         ss << "  \"values\":[";
         if (this->derived_cnaa.size() == 0) {
@@ -372,7 +373,7 @@ public:
         }
         ss << " },\n";
 
-        ss << " \"derived_quantity\": {\n";
+        ss << " {\n";
         ss << "  \"name\": \"cnal\",\n";
         ss << "  \"values\":[";
         if (this->derived_cnal.size() == 0) {
@@ -385,7 +386,7 @@ public:
         }
         ss << " },\n";
 
-        ss << " \"derived_quantity\": {\n";
+        ss << " {\n";
         ss << "  \"name\": \"cwaa\",\n";
         ss << "  \"values\":[";
         if (this->derived_cwaa.size() == 0) {
@@ -399,7 +400,7 @@ public:
         ss << " },\n";
 
 
-        ss << " \"derived_quantity\": {\n";
+        ss << "{\n";
         ss << "  \"name\": \"age_composition \",\n";
         ss << "  \"values\":[";
         if (this->derived_age_composition.size() == 0) {
@@ -412,7 +413,7 @@ public:
         }
         ss << " },\n";
 
-        ss << " \"derived_quantity\": {\n";
+        ss << " {\n";
         ss << "  \"name\": \"length_composition \",\n";
         ss << "  \"values\":[";
         if (this->derived_length_composition.size() == 0) {
@@ -425,7 +426,7 @@ public:
         }
         ss << " },\n";
 
-        ss << " \"derived_quantity\": {\n";
+        ss << "{\n";
         ss << "  \"name\": \"index \",\n";
         ss << "  \"values\":[";
         if (this->derived_index.size() == 0) {
@@ -436,7 +437,7 @@ public:
             }
             ss << this->derived_index[this->derived_index.size() - 1] << "]\n";
         }
-        ss << " }\n}";
+        ss << " }\n]\n}";
 
         return ss.str();
 

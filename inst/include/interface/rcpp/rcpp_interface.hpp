@@ -109,14 +109,16 @@ std::string finalize_fims(Rcpp::NumericVector par, Rcpp::Function fn, Rcpp::Func
     Rcpp::NumericVector grad = Rcpp::as<Rcpp::NumericVector>(g(par));
 
 
-    Rcpp::Rcout << "Final value = " << FIMS_function_value << "\nGradient: \n";
+    Rcpp::Rcout << "Final value = " << val << "\nGradient: \n";
     double maxgc = -999;
-    for (R_xlen_t i = 0; i < FIMS_function_gradient.size(); i++) {
+    for (R_xlen_t i = 0; i < grad.size(); i++) {
+        std::cout<<grad[i]<<" ";
         if (std::fabs(grad[i]) > maxgc) {
-            maxgc = std::fabs(FIMS_function_gradient[i]);
+            maxgc = std::fabs(grad[i]);
         }
     }
 
+    std::cout<<"\nmax gradient component: "<<maxgc<<"\n";
 
     for (size_t i = 0; i < FIMSRcppInterfaceBase::fims_interface_objects.size();
             i++) {
@@ -139,7 +141,7 @@ std::string finalize_fims(Rcpp::NumericVector par, Rcpp::Function fn, Rcpp::Func
     ss << "\"objective_function_value\": " << val << ",\n";
     ss << "\"max_gradient_component\": " << maxgc << ",\n";
     ss << "\"final_gradient\": [";
-    if (FIMS_function_gradient.size() > 0) {
+    if (grad.size() > 0) {
         for (R_xlen_t i = 0; i < grad.size() - 1; i++) {
             ss << grad[i] << ", ";
         }
@@ -327,7 +329,6 @@ void clear() {
 
     fims::FIMSLog::fims_log->clear();
 
-    FIMS_finalized = false;
 }
 
 /**

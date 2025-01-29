@@ -218,23 +218,23 @@ public:
         ss << " \"type\": \"Beverton--Holt\",\n";
         ss << " \"id\": " << this->id << ",\n";
 
-        ss << " \"parameter\": {\n";
+        ss << " \"parameters\": [\n{\n";
         ss << "  \"name\": \"logit_steep\",\n";
         ss << "  \"id\":" << this->logit_steep.id_m << ",\n";
         ss << "  \"type\": \"vector\",\n";
         ss << "  \"values\":" << this->logit_steep << "\n},\n";
 
-        ss << " \"parameter\": {\n";
+        ss << "{\n";
         ss << "   \"name\": \"log_rzero\",\n";
         ss << "   \"id\":" << this->log_rzero.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
         ss << "   \"values\":" << this->log_rzero << "\n },\n";
 
-        ss << " \"parameter\": {\n";
+        ss << "{\n";
         ss << "   \"name\": \"log_devs\",\n";
         ss << "   \"id\":" << this->log_devs.id_m << ",\n";
         ss << "   \"type\": \"vector\",\n";
-        ss << "   \"values\":" << this->log_devs << "\n }\n}";
+        ss << "   \"values\":" << this->log_devs << "\n }]\n}";
 
         return ss.str();
     }
