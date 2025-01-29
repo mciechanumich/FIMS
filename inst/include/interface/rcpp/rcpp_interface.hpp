@@ -114,13 +114,7 @@ bool CreateTMBModel() {
     return true;
 }
 
-/**
- * @brief Loops through the Rcpp Interface objects and extracts derived
- * quantities. Updates parameter estimates from model core objects.
- */
-void finalize_objects(Rcpp::NumericVector p) {
-    FIMS_function_parameters = p;
-
+std::string finalize_fims(Rcpp::NumericVector par, Rcpp::Function fn, Rcpp::Function gr) {
     std::shared_ptr<fims_info::Information < double>> information =
             fims_info::Information<double>::GetInstance();
 
@@ -128,176 +122,73 @@ void finalize_objects(Rcpp::NumericVector p) {
             fims_model::Model<double>::GetInstance();
     model->do_tmb_reporting = false;
     for (size_t i = 0; i < information->fixed_effects_parameters.size(); i++) {
-        *information->fixed_effects_parameters[i] = p[i];
+        *information->fixed_effects_parameters[i] = par[i];
     }
 
     model->Evaluate();
 
-    Rcpp::Function f = Rcpp::as<Rcpp::Function>(FIMS_objective_function);
-    Rcpp::Function g = Rcpp::as<Rcpp::Function>(FIMS_gradient_function);
-    double ret = Rcpp::as<double>(f(p));
-    Rcpp::NumericVector grad = Rcpp::as<Rcpp::NumericVector>(g(p));
 
-    FIMS_function_value = ret;
-    FIMS_function_gradient = grad;
+
+    Rcpp::Function f = Rcpp::as<Rcpp::Function>(fn);
+    Rcpp::Function g = Rcpp::as<Rcpp::Function>(gr);
+    double val = Rcpp::as<double>(f(par));
+    Rcpp::NumericVector grad = Rcpp::as<Rcpp::NumericVector>(g(par));
+
+
     Rcpp::Rcout << "Final value = " << FIMS_function_value << "\nGradient: \n";
     double maxgc = -999;
     for (R_xlen_t i = 0; i < FIMS_function_gradient.size(); i++) {
-        if (std::fabs(FIMS_function_gradient[i]) > maxgc) {
+        if (std::fabs(grad[i]) > maxgc) {
             maxgc = std::fabs(FIMS_function_gradient[i]);
         }
     }
-    FIMS_mgc_value = maxgc;
+
 
     for (size_t i = 0; i < FIMSRcppInterfaceBase::fims_interface_objects.size();
             i++) {
         FIMSRcppInterfaceBase::fims_interface_objects[i]->finalize();
     }
-}
 
-/**
- * @brief Finalizes a FIMS model by updating the parameter set. This function
- * evaluates the objective function and the gradient with the given parameter
- * set.
- * @param obj Either a list containing \"fn\" and \"gr\", or a list containing
- * two separate lists \"obj\" and \"opt\", \"obj\" should contain \"fn\" and
- * \"gr\", \"opt\" should contain \"par\". In the second case, the second
- * function argument is expected to be null and ignored.
- * TODO: Remove the ability to take a single list.
- * @param opt A list containing \"par\".
- */
-void finalize_fims(Rcpp::Nullable< Rcpp::List> obj = R_NilValue,
-        Rcpp::Nullable< Rcpp::List> opt = R_NilValue) {
-
-    bool valid_list = true;
-    Rcpp::NumericVector parameters;
-
-    //check and handle the first argument.
-    if (!Rf_isNull(obj.get())) {
-        Rcpp::List input_list = Rcpp::as<Rcpp::List>(obj);
-        if (input_list.containsElementNamed("obj")
-                && input_list.containsElementNamed("opt")) {
-            Rcpp::List obj_list = input_list["obj"];
-            Rcpp::List opt_list = input_list["opt"];
-
-            if (obj_list.containsElementNamed("fn")) {
-                FIMS_objective_function = obj_list["fn"];
-            } else {
-                valid_list = false;
-                FIMS_ERROR_LOG("Invalid call, \"fn\" not found in argument list.");
-            }
-
-            if (obj_list.containsElementNamed("gr")) {
-                FIMS_gradient_function = obj_list["gr"];
-            } else {
-                valid_list = false;
-                FIMS_ERROR_LOG("Invalid call, \"gr\" not found in argument list.");
-            }
-
-            if (opt_list.containsElementNamed("par")) {
-                parameters = Rcpp::as<Rcpp::NumericVector>(opt_list["par"]);
-            } else {
-                valid_list = false;
-                FIMS_ERROR_LOG("Invalid call, \"par\" not found in argument list.");
-            }
-
-            //if we are here, a single argument was used. if it contains the
-            //expected elements, the list is valid and objects can be finalize.
-            if (valid_list) {
-                finalize_objects(parameters);
-                FIMS_finalized = true;
-                return;
-            } else {
-                return;
-            }
-
-        } else {//two arguments?
-            if (input_list.containsElementNamed("fn")) {
-                FIMS_objective_function = input_list["fn"];
-            } else {
-                valid_list = false;
-                FIMS_ERROR_LOG("Invalid call, \"fn\" not found in argument list.");
-            }
-
-            if (input_list.containsElementNamed("gr")) {
-                FIMS_gradient_function = input_list["gr"];
-            } else {
-                valid_list = false;
-                FIMS_ERROR_LOG("Invalid call, \"gr\" not found in argument list.");
-            }
-        }
-    }
-
-    //check second argument.
-    if (!Rf_isNull(opt.get())) {
-
-        Rcpp::List input_list = Rcpp::as<Rcpp::List>(opt);
-
-        if (input_list.containsElementNamed("par")) {
-            parameters = Rcpp::as<Rcpp::NumericVector>(input_list["par"]);
-        } else {
-            valid_list = false;
-            FIMS_ERROR_LOG("Invalid call, \"par\" not found in argument list.");
-
-        }
-    } else {
-        valid_list = false;
-    }
-
-    //if we're here, two arguments were given. If they contain the expected
-    //elements, the lists are valid and objects can be finalized.
-    if (valid_list) {
-        finalize_objects(parameters);
-        FIMS_finalized = true;
-    }
-}
-
-/**
- * @brief Extracts the derived quantities from model objects.
- */
-std::string get_output() {
     std::string ret;
-    if (FIMS_finalized) {
-        auto now = std::chrono::system_clock::now();
-        std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-        std::string ctime_no_newline = strtok(ctime(&now_time), "\n");
-        std::shared_ptr<fims_info::Information < double>> info =
-                fims_info::Information<double>::GetInstance();
-        std::stringstream ss;
-        ss << "{\n";
-        ss << "\"timestamp\": \"" << ctime_no_newline << "\",\n";
-        ss << "\"nyears\":" << info->nyears << ",\n";
-        ss << "\"nseasons\":" << info->nseasons << ",\n";
-        ss << "\"nages\":" << info->nages << ",\n";
-        ss << "\"finalized\":" << FIMS_finalized << ",\n";
-        ss << "\"objective_function_value\": " << FIMS_function_value << ",\n";
-        ss << "\"max_gradient_component\": " << FIMS_mgc_value << ",\n";
-        ss << "\"final_gradient\": [";
-        if (FIMS_function_gradient.size() > 0) {
-            for (R_xlen_t i = 0; i < FIMS_function_gradient.size() - 1; i++) {
-                ss << FIMS_function_gradient[i] << ", ";
-            }
-            ss << FIMS_function_gradient[FIMS_function_gradient.size() - 1] << "],\n";
-        } else {
-            ss << "],";
-        }
-        
-        ss<<"\"modules\" : [\n";
-        size_t length = FIMSRcppInterfaceBase::fims_interface_objects.size();
-        for (size_t i = 0; i < length - 1; i++) {
-            ss << FIMSRcppInterfaceBase::fims_interface_objects[i]->to_json() << ",\n";
-        }
 
-        ss << FIMSRcppInterfaceBase::fims_interface_objects[length - 1]->to_json() << "\n]\n}";
-
-        
-        
-        ret = fims::JsonParser::PrettyFormatJSON(ss.str());
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    std::string ctime_no_newline = strtok(ctime(&now_time), "\n");
+    std::shared_ptr<fims_info::Information < double>> info =
+            fims_info::Information<double>::GetInstance();
+    std::stringstream ss;
+    ss << "{\n";
+    ss << "\"timestamp\": \"" << ctime_no_newline << "\",\n";
+    ss << "\"nyears\":" << info->nyears << ",\n";
+    ss << "\"nseasons\":" << info->nseasons << ",\n";
+    ss << "\"nages\":" << info->nages << ",\n";
+    ss << "\"objective_function_value\": " << val << ",\n";
+    ss << "\"max_gradient_component\": " << maxgc << ",\n";
+    ss << "\"final_gradient\": [";
+    if (FIMS_function_gradient.size() > 0) {
+        for (R_xlen_t i = 0; i < grad.size() - 1; i++) {
+            ss << grad[i] << ", ";
+        }
+        ss << grad[grad.size() - 1] << "],\n";
     } else {
-        Rcpp::Rcout << "Invalid request to \"get_output()\". Please call finalize() first.";
+        ss << "],";
     }
+
+    ss << "\"modules\" : [\n";
+    size_t length = FIMSRcppInterfaceBase::fims_interface_objects.size();
+    for (size_t i = 0; i < length - 1; i++) {
+        ss << FIMSRcppInterfaceBase::fims_interface_objects[i]->to_json() << ",\n";
+    }
+
+    ss << FIMSRcppInterfaceBase::fims_interface_objects[length - 1]->to_json() << "\n]\n}";
+
+
+
+    ret = fims::JsonParser::PrettyFormatJSON(ss.str());
+
     return ret;
 }
+
 
 /**
  * @brief Gets the fixed parameters vector object.
@@ -363,9 +254,9 @@ void clear_internal() {
     std::shared_ptr<fims_info::Information < Type>> d0 =
             fims_info::Information<Type>::GetInstance();
     d0->Clear();
-    
-    
-    
+
+
+
 }
 
 /**
@@ -449,11 +340,11 @@ void clear() {
     DmultinomDistributionsInterface::id_g = 1;
     DmultinomDistributionsInterface::live_objects.clear();
 #ifdef TMB_MODEL
-    
+
     std::shared_ptr<fims_model::Model < double>> model =
             fims_model::Model<double>::GetInstance();
     model->do_tmb_reporting = false;
-    
+
 #endif
     clear_internal<TMB_FIMS_REAL_TYPE>();
     clear_internal<TMB_FIMS_FIRST_ORDER>();
@@ -616,10 +507,7 @@ RCPP_MODULE(fims) {
             "Creates the TMB model object and adds interface objects to it.");
     Rcpp::function(
             "finalize", &finalize_fims,
-            "Extracts the derived quantities from `Information` to the Rcpp object.");
-    Rcpp::function(
-            "get_output", &get_output,
-            "Extracts the derived quantities from model objects.");
+            "Extracts the derived quantities from `Information` to the Rcpp object and returns a JSON string for output.");
     Rcpp::function(
             "get_fixed", &get_fixed_parameters_vector,
             "Gets the fixed parameters vector object.");
