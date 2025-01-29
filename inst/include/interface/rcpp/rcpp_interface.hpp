@@ -23,42 +23,6 @@
 #include "../rcpp/rcpp_objects/rcpp_interface_base.hpp"
 
 /**
- * @brief TODO: provide a brief description.
- *
- */
-SEXP FIMS_objective_function;
-/**
- * @brief TODO: provide a brief description.
- *
- */
-SEXP FIMS_gradient_function;
-/**
- * @brief A double to store the objective function value.
- *
- */
-double FIMS_function_value = 0;
-/**
- * @brief TODO: provide a brief description.
- *
- */
-Rcpp::NumericVector FIMS_function_parameters;
-/**
- * @brief TODO: provide a brief description.
- *
- */
-Rcpp::NumericVector FIMS_function_gradient;
-/**
- * @brief A double to store the maximum gradient component.
- *
- */
-double FIMS_mgc_value = 0;
-/**
- * @brief Sets FIMS_finalized to false as the default.
- *
- */
-bool FIMS_finalized = false;
-
-/**
  * Initializes the logging system, setting all signal handling.
  */
 void init_logging() {
@@ -114,6 +78,16 @@ bool CreateTMBModel() {
     return true;
 }
 
+/**
+ * Finalizes a model run by populating derived quantities into the Rcpp interface
+ * objects and returns the output as a JSON string.
+ * 
+ * @param par - vector of parameter values.
+ * @param fn - objective function.
+ * @param gr - gradient function.
+ * 
+ * @return - JSON output string.
+ */
 std::string finalize_fims(Rcpp::NumericVector par, Rcpp::Function fn, Rcpp::Function gr) {
     std::shared_ptr<fims_info::Information < double>> information =
             fims_info::Information<double>::GetInstance();
