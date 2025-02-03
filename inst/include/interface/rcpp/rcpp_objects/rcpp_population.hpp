@@ -311,13 +311,13 @@ public:
 
         ss << " \"parameters\": [\n{\n";
         ss << " \"name\": \"log_M\",\n";
-        ss << " \"id\":" << -999 << ",\n";
+        ss << " \"id\":" << this->log_M.id_m << ",\n";
         ss << " \"type\": \"vector\",\n";
         ss << " \"values\": " << this->log_M << "\n},\n";
 
         ss << "{\n";
         ss << "  \"name\": \"log_init_naa\",\n";
-        ss << "  \"id\":" << -999 << ",\n";
+        ss << "  \"id\":" <<  this->log_init_naa.id_m << ",\n";
         ss << "  \"type\": \"vector\",\n";
         ss << "  \"values\":" << this->log_init_naa << " \n}],\n";
 
