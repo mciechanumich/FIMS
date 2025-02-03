@@ -100,7 +100,7 @@ std::string finalize_fims(Rcpp::NumericVector par, Rcpp::Function fn, Rcpp::Func
     }
 
     model->Evaluate();
-
+    model->do_tmb_reporting = true;
 
 
     Rcpp::Function f = Rcpp::as<Rcpp::Function>(fn);
