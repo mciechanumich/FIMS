@@ -112,13 +112,13 @@ std::string finalize_fims(Rcpp::NumericVector par, Rcpp::Function fn, Rcpp::Func
     Rcpp::Rcout << "Final value = " << val << "\nGradient: \n";
     double maxgc = -999;
     for (R_xlen_t i = 0; i < grad.size(); i++) {
-        std::cout<<grad[i]<<" ";
+        std::cout << grad[i] << " ";
         if (std::fabs(grad[i]) > maxgc) {
             maxgc = std::fabs(grad[i]);
         }
     }
 
-    std::cout<<"\nmax gradient component: "<<maxgc<<"\n";
+    std::cout << "\nmax gradient component: " << maxgc << "\n";
 
     for (size_t i = 0; i < FIMSRcppInterfaceBase::fims_interface_objects.size();
             i++) {
@@ -152,19 +152,21 @@ std::string finalize_fims(Rcpp::NumericVector par, Rcpp::Function fn, Rcpp::Func
 
     ss << "\"modules\" : [\n";
     size_t length = FIMSRcppInterfaceBase::fims_interface_objects.size();
-    for (size_t i = 0; i < length - 1; i++) {
-        ss << FIMSRcppInterfaceBase::fims_interface_objects[i]->to_json() << ",\n";
+    if (length > 0) {
+        for (size_t i = 0; i < length - 1; i++) {
+            ss << FIMSRcppInterfaceBase::fims_interface_objects[i]->to_json() << ",\n";
+        }
+
+        ss << FIMSRcppInterfaceBase::fims_interface_objects[length - 1]->to_json() << "\n]\n}";
+
+    } else {
+        ss << "\n]\n}";
     }
-
-    ss << FIMSRcppInterfaceBase::fims_interface_objects[length - 1]->to_json() << "\n]\n}";
-
-
 
     ret = fims::JsonParser::PrettyFormatJSON(ss.str());
 
     return ret;
 }
-
 
 /**
  * @brief Gets the fixed parameters vector object.
