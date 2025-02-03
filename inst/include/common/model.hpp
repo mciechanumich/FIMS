@@ -186,7 +186,6 @@ namespace fims_model {
                     nll_components_idx += 1;
                 }
             }
-            std::cout << "n_data = " << n_data << std::endl;
 
             // initiate population index for structuring report out objects
             int pop_idx = 0;

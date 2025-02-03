@@ -691,11 +691,11 @@ public:
         for (size_t i = 0; i<this->expected_values.size(); i++) {
             distribution->expected_values[i] = this->expected_values[i].initial_value_m;
         }
-        if (this->dims.size() > 0) {
-            distribution->dims.resize(2);
-            distribution->dims[0] = this->dims[0];
-            distribution->dims[1] = this->dims[1];
-        }
+//        if (this->dims.size() > 0) {
+//            distribution->dims.resize(2);
+//            distribution->dims[0] = this->dims[0];
+//            distribution->dims[1] = this->dims[1];
+//        }
 
         info->density_components[distribution->id] = distribution;
 
