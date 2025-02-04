@@ -502,6 +502,15 @@ public:
             this->storage_m->at(i) = orig[i];
         }
     }
+    
+    Rcpp::NumericVector toR(){
+        Rcpp::NumericVector ret(this->storage_m->size());
+        for(size_t i =0; i < this->size(); i++){
+            ret[i] = this->storage_m->at(i);
+        }
+        
+        return ret;
+    }
 
     /**
      * @brief The accessor where the first index starts is zero.

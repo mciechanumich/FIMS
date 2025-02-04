@@ -104,15 +104,15 @@ public:
     /**
      * @brief The number of age bins in the fleet data.
      */
-    fims_int nages = 0;
+    SharedInt nages = 0;
     /**
      * @brief The number of length bins in the fleet data.
      */
-    fims_int nlengths = 0;
+    SharedInt nlengths = 0;
     /**
      * @brief The number of years in the fleet data.
      */
-    fims_int nyears = 0;
+    SharedInt nyears = 0;
     /**
      * @brief The natural log of the catchability parameter for this fleet.
      */
@@ -358,7 +358,7 @@ public:
         ss << " \"id\":" << this->log_q.id_m << ",\n";
         ss << " \"type\": \"vector\",\n";
         ss << " \"values\": " << this->log_q << "\n}],\n";
-        
+
         ss << " \"derived_quantities\":[\n";
         ss << "{\n";
         ss << "  \"name\": \"cnaa\",\n";
@@ -458,9 +458,9 @@ public:
         // set relative info
         fleet->id = this->id;
         fleet->is_survey = this->is_survey;
-        fleet->nages = this->nages;
-        fleet->nlengths = this->nlengths;
-        fleet->nyears = this->nyears;
+        fleet->nages = this->nages.get();
+        fleet->nlengths = this->nlengths.get();
+        fleet->nyears = this->nyears.get();
         fleet->fleet_observed_agecomp_data_id_m =
                 interface_observed_agecomp_data_id_m;
         fleet->fleet_observed_lengthcomp_data_id_m =
@@ -482,7 +482,7 @@ public:
             }
         }
 
-
+        FIMS_INFO_LOG("adding Fleet fmort object to TMB");
         fleet->log_Fmort.resize(this->log_Fmort.size());
         for (size_t i = 0; i < log_Fmort.size(); i++) {
             fleet->log_Fmort[i] = this->log_Fmort[i].initial_value_m;
@@ -500,17 +500,31 @@ public:
         info->variable_map[this->log_Fmort.id_m] = &(fleet)->log_Fmort;
 
         //exp_catch
-        fleet->log_expected_index.resize(nyears); // assume index is for all ages.
+        fleet->log_expected_index.resize(nyears.get()); // assume index is for all ages.
         info->variable_map[this->log_expected_index.id_m] = &(fleet)->log_expected_index;
-        fleet->proportion_catch_numbers_at_age.resize(nyears * nages);
+        fleet->proportion_catch_numbers_at_age.resize(nyears.get() * nages.get());
         info->variable_map[this->proportion_catch_numbers_at_age.id_m] = &(fleet)->proportion_catch_numbers_at_age;
+        FIMS_INFO_LOG(fims::to_string(this->nyears.get()) + " " + fims::to_string(this->nages.get()));
+        FIMS_INFO_LOG(" adding Fleet length object to TMB");
+
 
         if (this->nlengths > 0) {
-            fleet->proportion_catch_numbers_at_length.resize(nyears * nlengths);
-            fleet->age_length_conversion_matrix.resize(nages * nlengths);
+            
+            fleet->proportion_catch_numbers_at_length.resize(this->nyears.get() * this->nlengths.get());
+            fleet->age_length_conversion_matrix.resize(this->age_length_conversion_matrix.size());
+            
+            if (this->age_length_conversion_matrix.size() !=
+                    fleet->age_length_conversion_matrix.size()) {
+                FIMS_ERROR_LOG("age_length_conversion_matrix don't match, " +
+                        fims::to_string(this->age_length_conversion_matrix.size()) + " != " +
+                        fims::to_string(fleet->age_length_conversion_matrix.size()));
+            }
+            
+            
             for (size_t i = 0; i < fleet->age_length_conversion_matrix.size(); i++) {
                 fleet->age_length_conversion_matrix[i] = this->age_length_conversion_matrix[i].initial_value_m;
-
+                FIMS_INFO_LOG(" adding Fleet length object to TMB in loop " + fims::to_string(i) + " of " + fims::to_string(fleet->age_length_conversion_matrix.size()));
+                
                 if (this->age_length_conversion_matrix[i].estimated_m) {
                     info->RegisterParameterName("age_length_conversion_matrix");
                     if (this->age_length_conversion_matrix[i].is_random_effect_m) {
@@ -519,14 +533,16 @@ public:
                         info->RegisterParameter(fleet->age_length_conversion_matrix[i]);
                     }
                 }
+                FIMS_INFO_LOG(" adding Fleet length object to TMB in loop after if");
             }
+            FIMS_INFO_LOG(" adding Fleet length object to TMB out loop");
             info->variable_map[this->age_length_conversion_matrix.id_m] = &(fleet)->age_length_conversion_matrix;
             info->variable_map[this->proportion_catch_numbers_at_length.id_m] = &(fleet)->proportion_catch_numbers_at_length;
         }
 
         // add to Information
         info->fleets[fleet->id] = fleet;
-
+        FIMS_INFO_LOG("done adding Fleet object to TMB");
         return true;
     }
 

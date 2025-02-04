@@ -668,6 +668,8 @@ public:
 
     template <typename Type>
     bool add_to_fims_tmb_internal() {
+        
+        FIMS_INFO_LOG("adding multinomial to FIMS.");
         std::shared_ptr<fims_info::Information < Type>> info =
                 fims_info::Information<Type>::GetInstance();
 
@@ -698,7 +700,7 @@ public:
 //        }
 
         info->density_components[distribution->id] = distribution;
-
+FIMS_INFO_LOG("done adding multinomial to FIMS.");
         return true;
     }
 

@@ -146,16 +146,17 @@ public:
         fims_popdy::EWAAgrowth<double> EWAAGrowth;
 
         if (initialized == false) {
-            EWAAGrowth.ewaa  = make_map(this->ages, this->weights);
+
             // Check that ages and weights vector are the same length
             if (this->ages.size() != this->weights.size()) {
                 Rcpp::stop("ages and weights must be the same length");
             }
+            EWAAGrowth.ewaa = make_map(this->ages, this->weights);
             initialized = true;
         } else {
             Rcpp::stop("this empirical weight at age object is already initialized");
         }
-//        EWAAGrowth.ewaa = *this->ewaa;
+        //        EWAAGrowth.ewaa = *this->ewaa;
         return EWAAGrowth.evaluate(age);
     }
 

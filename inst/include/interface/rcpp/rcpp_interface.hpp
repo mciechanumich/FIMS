@@ -109,16 +109,16 @@ std::string finalize_fims(Rcpp::NumericVector par, Rcpp::Function fn, Rcpp::Func
     Rcpp::NumericVector grad = Rcpp::as<Rcpp::NumericVector>(g(par));
 
 
-   // Rcpp::Rcout << "Final value = " << val << "\nGradient: \n";
+    // Rcpp::Rcout << "Final value = " << val << "\nGradient: \n";
     double maxgc = -999;
     for (R_xlen_t i = 0; i < grad.size(); i++) {
-       // std::cout << grad[i] << " ";
+        // std::cout << grad[i] << " ";
         if (std::fabs(grad[i]) > maxgc) {
             maxgc = std::fabs(grad[i]);
         }
     }
 
-   // std::cout << "\nmax gradient component: " << maxgc << "\n";
+    // std::cout << "\nmax gradient component: " << maxgc << "\n";
 
     for (size_t i = 0; i < FIMSRcppInterfaceBase::fims_interface_objects.size();
             i++) {
@@ -599,6 +599,8 @@ RCPP_MODULE(fims) {
             "An internal setter for setting a position of a RealVector from R.")
             .method("fromR", &RealVector::fromR,
             "Initializes the RealVector from the values of a R vector.")
+            .method("toR", &RealVector::toR,
+            "Returns values as a R vector.")
             .method("show", &RealVector::show,
             "The printing methods for a RealVector.")
             .method("at", &RealVector::at,
