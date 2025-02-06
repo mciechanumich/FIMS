@@ -243,6 +243,9 @@ public:
 
     template <typename Type>
     bool add_to_fims_tmb_internal() {
+        
+        FIMS_INFO_LOG("Adding Beverton-Holt model "+fims::to_string(this->id)+" to Information object.");
+        
         std::shared_ptr<fims_info::Information<Type> > info =
                 fims_info::Information<Type>::GetInstance();
 

@@ -44,7 +44,10 @@ void init_logging() {
 bool CreateTMBModel() {
     init_logging();
 
-    FIMS_INFO_LOG("adding FIMS objects to TMB");
+    FIMS_INFO_LOG("Adding FIMS objects to TMB, " +
+            fims::to_string(FIMSRcppInterfaceBase::fims_interface_objects.size()) +
+            " objects");
+
     for (size_t i = 0; i < FIMSRcppInterfaceBase::fims_interface_objects.size();
             i++) {
         FIMSRcppInterfaceBase::fims_interface_objects[i]->add_to_fims_tmb();
@@ -99,8 +102,10 @@ std::string finalize_fims(Rcpp::NumericVector par, Rcpp::Function fn, Rcpp::Func
         *information->fixed_effects_parameters[i] = par[i];
     }
 
+    bool reporting = model->do_tmb_reporting;
+    model->do_tmb_reporting = false;
     model->Evaluate();
-    model->do_tmb_reporting = true;
+
 
 
     Rcpp::Function f = Rcpp::as<Rcpp::Function>(fn);
@@ -164,7 +169,7 @@ std::string finalize_fims(Rcpp::NumericVector par, Rcpp::Function fn, Rcpp::Func
     }
 
     ret = fims::JsonParser::PrettyFormatJSON(ss.str());
-
+    model->do_tmb_reporting = reporting;
     return ret;
 }
 
@@ -241,6 +246,9 @@ void clear_internal() {
  * @brief Clears the vector of independent variables.
  */
 void clear() {
+
+    FIMS_INFO_LOG("Clearing FIMS objects from interface stack");
+
     // rcpp_interface_base.hpp
     FIMSRcppInterfaceBase::fims_interface_objects.clear();
 
@@ -317,13 +325,7 @@ void clear() {
 
     DmultinomDistributionsInterface::id_g = 1;
     DmultinomDistributionsInterface::live_objects.clear();
-#ifdef TMB_MODEL
 
-    std::shared_ptr<fims_model::Model < double>> model =
-            fims_model::Model<double>::GetInstance();
-    model->do_tmb_reporting = false;
-
-#endif
     clear_internal<TMB_FIMS_REAL_TYPE>();
     clear_internal<TMB_FIMS_FIRST_ORDER>();
     clear_internal<TMB_FIMS_SECOND_ORDER>();
@@ -459,8 +461,8 @@ RCPP_EXPOSED_CLASS(Parameter)
 RCPP_EXPOSED_CLASS(ParameterVector)
 RCPP_EXPOSED_CLASS(RealVector)
 RCPP_EXPOSED_CLASS(SharedInt)
-RCPP_EXPOSED_CLASS(ShareReal)
-
+RCPP_EXPOSED_CLASS(SharedReal)
+RCPP_EXPOSED_CLASS(SharedBoolean)
 
 /**
  * @brief The `fims` Rcpp module construct, providing declarative code of what
@@ -619,6 +621,14 @@ RCPP_MODULE(fims) {
             .constructor<int>()
             .method("get", &SharedInt::get)
             .method("set", &SharedInt::set);
+    
+        Rcpp::class_<SharedBoolean>(
+            "SharedBoolean",
+            "An RcppInterface class that defines the SharedBoolean class.")
+            .constructor()
+            .constructor<bool>()
+            .method("get", &SharedBoolean::get)
+            .method("set", &SharedBoolean::set);
 
     Rcpp::class_<SharedReal>(
             "SharedReal",

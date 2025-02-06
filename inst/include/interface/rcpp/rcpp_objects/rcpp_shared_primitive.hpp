@@ -615,9 +615,165 @@ public:
     }
 };
 
+
+class SharedBoolean {
+private:
+    std::shared_ptr<bool> value;
+
+public:
+    // Constructor
+
+    SharedBoolean() : value(std::make_shared<bool>(0)) {
+    }
+
+    SharedBoolean(bool val) : value(std::make_shared<bool>(val)) {
+    }
+
+    // Copy Constructor
+
+    SharedBoolean(const SharedBoolean& other) : value(other.value) {
+    }
+
+    // Assignment Operator
+
+    SharedBoolean& operator=(const SharedBoolean& other) {
+        if (this != &other) {
+            value = other.value;
+        }
+        return *this;
+    }
+
+    SharedBoolean& operator=(const bool& other) {
+
+        *value = other;
+
+        return *this;
+    }
+
+    // Move Constructor
+
+    SharedBoolean(SharedBoolean&& other) noexcept : value(std::move(other.value)) {
+    }
+
+    // Move Assignment Operator
+
+    SharedBoolean& operator=(SharedBoolean&& other) noexcept {
+        if (this != &other) {
+            value = std::move(other.value);
+        }
+        return *this;
+    }
+
+    // Access the value
+
+    bool get() const {
+        return *value;
+    }
+
+    void set(bool val) {
+        *value = val;
+    }
+
+    operator bool() {
+        return this->get();
+    }
+
+    // Overloaded operators for SharedPrimitive
+
+    bool operator*() const {
+        return *value;
+    } // Dereference
+
+    bool* operator->() {
+        return value.get();
+    } // Arrow operator
+
+    const bool* operator->() const {
+        return value.get();
+    } // Const arrow operator
+
+    
+
+    // Relational operators
+
+    bool operator==(const SharedBoolean& other) const {
+        return *value == *other.value;
+    }
+
+    bool operator!=(const SharedBoolean& other) const {
+        return *value != *other.value;
+    }
+
+    bool operator<(const SharedBoolean& other) const {
+        return *value < *other.value;
+    }
+
+    bool operator<=(const SharedBoolean& other) const {
+        return *value <= *other.value;
+    }
+
+    bool operator>(const SharedBoolean& other) const {
+        return *value > *other.value;
+    }
+
+    bool operator>=(const SharedBoolean& other) const {
+        return *value >= *other.value;
+    }
+
+    // Relational operators with primitives
+
+    bool operator==(const bool& other) const {
+        return *value == other;
+    }
+
+    bool operator!=(const bool& other) const {
+        return *value != other;
+    }
+
+    bool operator<(const bool& other) const {
+        return *value < other;
+    }
+
+    bool operator<=(const bool& other) const {
+        return *value <= other;
+    }
+
+    bool operator>(const bool& other) const {
+        return *value > other;
+    }
+
+    bool operator>=(const bool& other) const {
+        return *value >= other;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const SharedBoolean& sp) {
+        os << *sp.value;
+        return os;
+    }
+};
+
+
+
+bool operator<(const bool& lhs, const SharedBoolean& rhs) {
+    return (lhs < rhs.get());
+}
+
+bool operator<=(const bool& lhs, const SharedBoolean& rhs) {
+    return (lhs <= rhs.get());
+}
+
+bool operator>(const bool& lhs, const SharedBoolean& rhs) {
+    return (lhs > rhs.get());
+}
+
+bool operator>=(const bool& lhs, const SharedBoolean& rhs) {
+    return (lhs >= rhs.get());
+}
+
+
 typedef SharedInt fims_int;
 typedef SharedReal fims_double;
 typedef SharedString fims_string;
-
+typedef SharedBoolean fims_bool;
 
 #endif

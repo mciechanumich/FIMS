@@ -401,9 +401,9 @@ public:
             warning("The ages vector is not of size nages.");
         }
 
-        population->growth_id = this->growth_id;
-        population->recruitment_id = this->recruitment_id;
-        population->maturity_id = this->maturity_id;
+        population->growth_id = this->growth_id.get();
+        population->recruitment_id = this->recruitment_id.get();
+        population->maturity_id = this->maturity_id.get();
         population->log_M.resize(this->log_M.size());
         population->log_init_naa.resize(this->log_init_naa.size());
         for (size_t i = 0; i < log_M.size(); i++) {

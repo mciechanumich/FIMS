@@ -100,7 +100,7 @@ public:
      * designated to be a fleet or a survey. This will be fixed in later
      * versions.
      */
-    bool is_survey = false;
+    SharedBoolean is_survey = false;
     /**
      * @brief The number of age bins in the fleet data.
      */
@@ -346,6 +346,7 @@ public:
         ss << " \"type\" : \"fleet\",\n";
         ss << " \"tag\" : \"" << this->name << "\",\n";
         ss << " \"id\": " << this->id << ",\n";
+        ss << " \"is_survey\": " << this->is_survey << ",\n";
         ss << "\"parameters\": [\n";
         ss << "{\n";
         ss << " \"name\": \"log_Fmort\",\n";
@@ -457,7 +458,7 @@ public:
 
         // set relative info
         fleet->id = this->id;
-        fleet->is_survey = this->is_survey;
+        fleet->is_survey = this->is_survey.get();
         fleet->nages = this->nages.get();
         fleet->nlengths = this->nlengths.get();
         fleet->nyears = this->nyears.get();

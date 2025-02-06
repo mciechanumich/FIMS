@@ -226,7 +226,7 @@ namespace fims_model {
             // Reporting
 #ifdef TMB_MODEL
 
-//            if (do_tmb_reporting) {
+            if (do_tmb_reporting) {
                 //FIMS_REPORT_F(rec_nll, of);
                 //FIMS_REPORT_F(age_comp_nll, of);
                 //FIMS_REPORT_F(index_nll, of);
@@ -275,7 +275,7 @@ namespace fims_model {
                 ADREPORT_F(CNAL, of);
                 ADREPORT_F(PCNAA, of);
                 ADREPORT_F(PCNAL, of);
-//            }
+            }
 #endif
 
             return jnll;
