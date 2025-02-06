@@ -93,7 +93,7 @@ public:
      * @brief Should the natural log of recruitment deviations be estimated? The
      * default is false.
      */
-    bool estimate_log_devs = false;
+    SharedBoolean estimate_log_devs = false;
     /**
      * @brief The estimate of the logit transformation of steepness.
      */

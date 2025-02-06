@@ -141,11 +141,11 @@ public:
     /**
      * @brief Should catchability (q) be estimated? The default is false.
      */
-    bool estimate_q = false;
+    SharedBoolean estimate_q = false;
     /**
      * @brief Is catchability (q) a random effect? The default is false.
      */
-    bool random_q = false;
+    SharedBoolean random_q = false;
     // derived quantities
     /**
      * @brief Derived catch-at-age in numbers.
