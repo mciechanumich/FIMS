@@ -168,20 +168,21 @@ initialize_module <- function(parameters, data, module_name) {
         )
       )
     } else if (field %in% boolean_fields) {
-      module[[field]] <- switch(field,
-        "estimate_log_devs" = module_input[[
-          paste0(module_class_name, ".estimate_log_devs")
-        ]],
-        "estimate_prop_female" = TRUE,
-        "estimate_q" = module_input[[
-          paste0(module_class_name, ".log_q.estimated")
-        ]],
-        "is_survey" = !("landings" %in% fleet_types),
-        "random_q" = FALSE,
-        cli::cli_abort(c(
-          "{.var {field}} is not a valid field in {.var {module_class_name}}
-          module."
-        ))
+      module[[field]]$set(
+        switch(field,
+          "estimate_log_devs" = module_input[[
+            paste0(module_class_name, ".estimate_log_devs")
+          ]],
+          "estimate_q" = module_input[[
+            paste0(module_class_name, ".log_q.estimated")
+          ]],
+          "is_survey" = !("landings" %in% fleet_types),
+          "random_q" = FALSE,
+          cli::cli_abort(c(
+            "{.var {field}} is not a valid field in {.var {module_class_name}}
+            module."
+          ))
+        )
       )
     } else if (field %in% c("ages", "weights")) {
         get_value_function <- switch(field,
