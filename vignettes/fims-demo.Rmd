@@ -81,20 +81,10 @@ By just passing lists of fleet specifications and the data to `create_default_pa
   - "LogisticMaturity" for maturity module.
 
 ```{r parameters, max.height='100px', attr.output='.numberLines'}
-# Define the same fleet specifications for fleet1 and survey1
-fleet1 <- survey1 <- list(
-  selectivity = list(form = "LogisticSelectivity"),
-  data_distribution = c(
-    Index = "DlnormDistribution",
-    AgeComp = "DmultinomDistribution",
-    LengthComp = "DmultinomDistribution"
-  )
-)
-
 # Create default recruitment, growth, and maturity parameters
 default_parameters <- data_4_model |>
   create_default_parameters(
-    fleets = list(fleet1 = fleet1, survey1 = survey1)
+    fleets = create_default_fleet_list(data_4_model)
   )
 ```
 
