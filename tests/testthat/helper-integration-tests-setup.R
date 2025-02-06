@@ -103,8 +103,8 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   }
   fishing_fleet$log_Fmort$set_all_estimable(TRUE)
   fishing_fleet$log_q[1]$value <- log(1.0)
-  fishing_fleet$estimate_q <- FALSE
-  fishing_fleet$random_q <- FALSE
+  fishing_fleet$estimate_q$set(FALSE)
+  fishing_fleet$random_q$set(FALSE)
   fishing_fleet$SetSelectivity(fishing_fleet_selectivity$get_id())
   fishing_fleet$SetObservedIndexData(fishing_fleet_index$get_id())
   fishing_fleet$SetObservedAgeCompData(fishing_fleet_age_comp$get_id())
@@ -177,8 +177,8 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   survey_fleet$nlengths$set(om_input[["nlengths"]])
   survey_fleet$log_q[1]$value <- log(om_output[["survey_q"]][["survey1"]])
   survey_fleet$log_q[1]$estimated <- TRUE
-  survey_fleet$estimate_q <- TRUE
-  survey_fleet$random_q <- FALSE
+  survey_fleet$estimate_q$set(TRUE)
+  survey_fleet$random_q$set(FALSE)
   survey_fleet$SetSelectivity(survey_fleet_selectivity$get_id())
   survey_fleet$SetObservedIndexData(survey_fleet_index$get_id())
   survey_fleet$SetObservedAgeCompData(survey_fleet_age_comp$get_id())
@@ -256,7 +256,7 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
     recruitment_distribution$expected_values[i]$value <- 0
   }
   recruitment_distribution$set_distribution_links("random_effects", recruitment$log_devs$get_id())
-  recruitment$estimate_log_devs <- TRUE
+  recruitment$estimate_log_devs$set(TRUE)
 
   # Growth
   ewaa_growth <- methods::new(EWAAgrowth)
