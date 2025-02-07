@@ -227,14 +227,14 @@ public:
      * @param selectivity_id Unique ID for the observed object.
      */
     void SetSelectivity(int selectivity_id) {
-        interface_selectivity_id_m = selectivity_id;
+        interface_selectivity_id_m.set(selectivity_id);
     }
 
     /**
      * @brief Get the unique ID for the observed age-composition data object.
      */
     int GetObservedAgeCompDataID() {
-        return interface_observed_agecomp_data_id_m;
+        return interface_observed_agecomp_data_id_m.get();
     }
 
     /**
@@ -242,14 +242,14 @@ public:
      * object.
      */
     int GetObservedLengthCompDataID() {
-        return interface_observed_lengthcomp_data_id_m;
+        return interface_observed_lengthcomp_data_id_m.get();
     }
 
     /**
      * @brief Get the unique id for the observed index data object.
      */
     int GetObservedIndexDataID() {
-        return interface_observed_index_data_id_m;
+        return interface_observed_index_data_id_m.get();
     }
 
     /** 
@@ -537,8 +537,8 @@ public:
                 FIMS_INFO_LOG(" adding Fleet length object to TMB in loop after if");
             }
             FIMS_INFO_LOG(" adding Fleet length object to TMB out loop");
-            info->variable_map[this->age_length_conversion_matrix.id_m] = &(fleet)->age_length_conversion_matrix;
-            info->variable_map[this->proportion_catch_numbers_at_length.id_m] = &(fleet)->proportion_catch_numbers_at_length;
+            info->variable_map[this->age_length_conversion_matrix.id_m] = &(fleet)->age_length_conversion_matrix.get();
+            info->variable_map[this->proportion_catch_numbers_at_length.id_m] = &(fleet)->proportion_catch_numbers_at_length.get();
         }
 
         // add to Information
