@@ -135,6 +135,7 @@ namespace fims_info {
          */
         void Clear(){
             this->data_objects.clear();
+            this->populations.clear();
             this->density_components.clear();
             this->fixed_effects_parameters.clear();
             this->fleets.clear();
