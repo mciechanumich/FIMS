@@ -65,7 +65,9 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
                                                 em_input_list,
                                                 estimation_mode = TRUE,
                                                 map = list()) {
-  # Load operating model data for the current iteration
+                                                
+  set_log_throw_on_error(TRUE)
+   # Load operating model data for the current iteration
   om_input <- om_input_list[[iter_id]] # Operating model input for the current iteration
   om_output <- om_output_list[[iter_id]] # Operating model output for the current iteration
   em_input <- em_input_list[[iter_id]] # Estimation model input for the current iteration
@@ -78,17 +80,17 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   # set fishing fleet catch data, need to set dimensions of data index
   # currently FIMS only has a fleet module that takes index for both survey index and fishery catch
   fishing_fleet_index <- methods::new(Index, om_input[["nyr"]])
-  fishing_fleet_index$index_data <- catch
+  fishing_fleet_index$index_data$fromR(catch)
   # set fishing fleet age comp data, need to set dimensions of age comps
   # Here the new function initializes the object with length nyr*nages
   fishing_fleet_age_comp <- methods::new(AgeComp, om_input[["nyr"]], om_input[["nages"]])
   # Here we fill in the values for the object with the observed age comps for fleet one
   # we multiply these proportions by the sample size for likelihood weighting
-  fishing_fleet_age_comp$age_comp_data <- c(t(em_input[["L.age.obs"]][["fleet1"]])) * em_input[["n.L"]][["fleet1"]]
+  fishing_fleet_age_comp$age_comp_data$fromR(c(t(em_input[["L.age.obs"]][["fleet1"]]* em_input[["n.L"]][["fleet1"]])))
 
   # set fishing fleet length comp data, need to set dimensions of length comps
   fishing_fleet_length_comp <- methods::new(LengthComp, om_input[["nyr"]], om_input[["nlengths"]])
-  fishing_fleet_length_comp$length_comp_data <- c(t(em_input[["L.length.obs"]][["fleet1"]])) * em_input[["n.L.lengthcomp"]][["fleet1"]]
+  fishing_fleet_length_comp$length_comp_data$fromR(c(t(em_input[["L.length.obs"]][["fleet1"]])) * em_input[["n.L.lengthcomp"]][["fleet1"]])
 
   # Fleet
   # Create the fishing fleet
@@ -105,11 +107,11 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   # Initialize the fishing fleet module
   fishing_fleet <- methods::new(Fleet)
   # Set number of years
-  fishing_fleet$nyears <- om_input[["nyr"]]
+  fishing_fleet$nyears$set(om_input[["nyr"]])
   # Set number of age classes
-  fishing_fleet$nages <- om_input[["nages"]]
+  fishing_fleet$nages$set(om_input[["nages"]])
   # Set number of length bins
-  fishing_fleet$nlengths <- om_input[["nlengths"]]
+  fishing_fleet$nlengths$set(om_input[["nlengths"]])
 
   fishing_fleet$log_Fmort$resize(om_input[["nyr"]])
   for (y in 1:om_input$nyr) {
@@ -118,8 +120,8 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   }
   fishing_fleet$log_Fmort$set_all_estimable(TRUE)
   fishing_fleet$log_q[1]$value <- log(1.0)
-  fishing_fleet$estimate_q <- FALSE
-  fishing_fleet$random_q <- FALSE
+  fishing_fleet$estimate_q$set(FALSE)
+  fishing_fleet$random_q$set(FALSE)
   fishing_fleet$SetSelectivity(fishing_fleet_selectivity$get_id())
   fishing_fleet$SetObservedIndexData(fishing_fleet_index$get_id())
   fishing_fleet$SetObservedAgeCompData(fishing_fleet_age_comp$get_id())
@@ -163,14 +165,16 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
 
   # Repeat similar setup for the survey fleet (e.g., index, age comp, and length comp)
   # This includes initializing logistic selectivity, observed data modules, and distribution links.
-  survey_index <- em_input[["surveyB.obs"]][["survey1"]]
+  survey_index <- c(t(em_input[["surveyB.obs"]][["survey1"]]))
   survey_fleet_index <- methods::new(Index, om_input[["nyr"]])
-  survey_fleet_index$index_data <- survey_index
+  survey_fleet_index$index_data$fromR(survey_index)
+  
   survey_fleet_age_comp <- methods::new(AgeComp, om_input[["nyr"]], om_input[["nages"]])
-  survey_fleet_age_comp$age_comp_data <- c(t(em_input[["survey.age.obs"]][["survey1"]])) * em_input[["n.survey"]][["survey1"]]
-  survey_lengthcomp <- em_input[["survey.length.obs"]][["survey1"]]
+  survey_fleet_age_comp$age_comp_data$fromR(c(t(em_input[["survey.age.obs"]][["survey1"]])) * em_input[["n.survey"]][["survey1"]])
+  survey_lengthcomp <- c(t(em_input[["survey.length.obs"]][["survey1"]]))
+  
   survey_fleet_length_comp <- methods::new(LengthComp, om_input[["nyr"]], om_input[["nlengths"]])
-  survey_fleet_length_comp$length_comp_data <- c(t(survey_lengthcomp)) * em_input[["n.survey.lengthcomp"]][["survey1"]]
+  survey_fleet_length_comp$length_comp_data$fromR(survey_lengthcomp * em_input[["n.survey.lengthcomp"]][["survey1"]])
   # Fleet
   # Create the survey fleet
   survey_fleet_selectivity <- methods::new(LogisticSelectivity)
@@ -184,14 +188,14 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   survey_fleet_selectivity$slope[1]$estimated <- TRUE
 
   survey_fleet <- methods::new(Fleet)
-  survey_fleet$is_survey <- TRUE
-  survey_fleet$nages <- om_input[["nages"]]
-  survey_fleet$nyears <- om_input[["nyr"]]
-  survey_fleet$nlengths <- om_input[["nlengths"]]
+  survey_fleet$is_survey$set(TRUE)
+  survey_fleet$nages$set(om_input[["nages"]])
+  survey_fleet$nyears$set(om_input[["nyr"]])
+  survey_fleet$nlengths$set(om_input[["nlengths"]])
   survey_fleet$log_q[1]$value <- log(om_output[["survey_q"]][["survey1"]])
   survey_fleet$log_q[1]$estimated <- TRUE
-  survey_fleet$estimate_q <- TRUE
-  survey_fleet$random_q <- FALSE
+  survey_fleet$estimate_q$set(TRUE)
+  survey_fleet$random_q$set(FALSE)
   survey_fleet$SetSelectivity(survey_fleet_selectivity$get_id())
   survey_fleet$SetObservedIndexData(survey_fleet_index$get_id())
   survey_fleet$SetObservedAgeCompData(survey_fleet_age_comp$get_id())
@@ -275,8 +279,8 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
 
   # Growth
   ewaa_growth <- methods::new(EWAAgrowth)
-  ewaa_growth$ages <- om_input[["ages"]]
-  ewaa_growth$weights <- om_input[["W.mt"]]
+  ewaa_growth$ages$fromR(c(t(om_input[["ages"]])))
+  ewaa_growth$weights$fromR(c(t(om_input[["W.mt"]])))
 
   # Maturity
   maturity <- methods::new(LogisticMaturity)
@@ -299,11 +303,11 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
     population$log_init_naa[i]$value <- log(om_output[["N.age"]][1, i])
   }
   population$log_init_naa$set_all_estimable(TRUE)
-  population$nages <- om_input[["nages"]]
-  population$ages <- om_input[["ages"]]
-  population$nfleets <- sum(om_input[["fleet_num"]], om_input[["survey_num"]])
-  population$nseasons <- 1
-  population$nyears <- om_input[["nyr"]]
+  population$nages$set(om_input[["nages"]])
+  population$ages$fromR(c(t(om_input[["ages"]])))
+  population$nfleets$set(sum(om_input[["fleet_num"]], om_input[["survey_num"]]))
+  population$nseasons$set(1)
+  population$nyears$set(om_input[["nyr"]])
   population$SetRecruitment(recruitment$get_id())
   population$SetGrowth(ewaa_growth$get_id())
   population$SetMaturity(maturity$get_id())

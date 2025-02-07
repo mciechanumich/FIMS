@@ -28,6 +28,7 @@ namespace fims_model {
                            Information*/
 
 #ifdef TMB_MODEL
+        bool do_tmb_reporting = true;
         ::objective_function<Type> *of;
 #endif
 
@@ -164,7 +165,7 @@ namespace fims_model {
 
                 f->evaluate_age_comp();
                 if (f->nlengths > 0) {
-                  f->evaluate_length_comp();
+                    f->evaluate_length_comp();
                 }
                 f->evaluate_index();
             }
@@ -224,54 +225,57 @@ namespace fims_model {
 
             // Reporting
 #ifdef TMB_MODEL
-            //FIMS_REPORT_F(rec_nll, of);
-            //FIMS_REPORT_F(age_comp_nll, of);
-            //FIMS_REPORT_F(index_nll, of);
-            FIMS_REPORT_F(jnll, of);
-            FIMS_REPORT_F(naa, of);
-            FIMS_REPORT_F(ssb, of);
-            FIMS_REPORT_F(log_recruit_dev, of);
-            FIMS_REPORT_F(recruitment, of);
-            FIMS_REPORT_F(biomass, of);
-            FIMS_REPORT_F(M, of);
-            FIMS_REPORT_F(exp_index, of);
-            FIMS_REPORT_F(exp_catch, of);
-            FIMS_REPORT_F(F_mort, of);
-            FIMS_REPORT_F(q, of);
-            FIMS_REPORT_F(cnaa, of);
-            FIMS_REPORT_F(cnal, of);
-            FIMS_REPORT_F(pcnaa, of);
-            FIMS_REPORT_F(pcnal, of);
-            FIMS_REPORT_F(cwaa, of);
-            FIMS_REPORT_F(nll_components, of);
 
-            /*ADREPORT using ADREPORTvector defined in
-             * inst/include/interface/interface.hpp:
-             * function collapses the nested vector into a single vector
-             */
-            vector<Type> NAA = ADREPORTvector(naa);
-            vector<Type> Biomass = ADREPORTvector(biomass);
-            vector<Type> SSB = ADREPORTvector(ssb);
-            vector<Type> LogRecDev = ADREPORTvector(log_recruit_dev);
-            vector<Type> FMort = ADREPORTvector(F_mort);
-            vector<Type> Q = ADREPORTvector(q);
-            vector<Type> ExpectedIndex = ADREPORTvector(exp_index);
-            vector<Type> CNAA = ADREPORTvector(cnaa);
-            vector<Type> CNAL = ADREPORTvector(cnal);
-            vector<Type> PCNAA = ADREPORTvector(pcnaa);
-            vector<Type> PCNAL = ADREPORTvector(pcnal);
+            if (do_tmb_reporting) {
+                //FIMS_REPORT_F(rec_nll, of);
+                //FIMS_REPORT_F(age_comp_nll, of);
+                //FIMS_REPORT_F(index_nll, of);
+                FIMS_REPORT_F(jnll, of);
+                FIMS_REPORT_F(naa, of);
+                FIMS_REPORT_F(ssb, of);
+                FIMS_REPORT_F(log_recruit_dev, of);
+                FIMS_REPORT_F(recruitment, of);
+                FIMS_REPORT_F(biomass, of);
+                FIMS_REPORT_F(M, of);
+                FIMS_REPORT_F(exp_index, of);
+                FIMS_REPORT_F(exp_catch, of);
+                FIMS_REPORT_F(F_mort, of);
+                FIMS_REPORT_F(q, of);
+                FIMS_REPORT_F(cnaa, of);
+                FIMS_REPORT_F(cnal, of);
+                FIMS_REPORT_F(pcnaa, of);
+                FIMS_REPORT_F(pcnal, of);
+                FIMS_REPORT_F(cwaa, of);
+                FIMS_REPORT_F(nll_components, of);
 
-            ADREPORT_F(NAA, of);
-            ADREPORT_F(Biomass, of);
-            ADREPORT_F(SSB, of);
-            ADREPORT_F(LogRecDev, of);
-            ADREPORT_F(FMort, of);
-            ADREPORT_F(Q, of);
-            ADREPORT_F(ExpectedIndex, of);
-            ADREPORT_F(CNAA, of);
-            ADREPORT_F(CNAL, of);
-            ADREPORT_F(PCNAA, of);
-            ADREPORT_F(PCNAL, of);
+                /*ADREPORT using ADREPORTvector defined in
+                 * inst/include/interface/interface.hpp:
+                 * function collapses the nested vector into a single vector
+                 */
+                vector<Type> NAA = ADREPORTvector(naa);
+                vector<Type> Biomass = ADREPORTvector(biomass);
+                vector<Type> SSB = ADREPORTvector(ssb);
+                vector<Type> LogRecDev = ADREPORTvector(log_recruit_dev);
+                vector<Type> FMort = ADREPORTvector(F_mort);
+                vector<Type> Q = ADREPORTvector(q);
+                vector<Type> ExpectedIndex = ADREPORTvector(exp_index);
+                vector<Type> CNAA = ADREPORTvector(cnaa);
+                vector<Type> CNAL = ADREPORTvector(cnal);
+                vector<Type> PCNAA = ADREPORTvector(pcnaa);
+                vector<Type> PCNAL = ADREPORTvector(pcnal);
+
+                ADREPORT_F(NAA, of);
+                ADREPORT_F(Biomass, of);
+                ADREPORT_F(SSB, of);
+                ADREPORT_F(LogRecDev, of);
+                ADREPORT_F(FMort, of);
+                ADREPORT_F(Q, of);
+                ADREPORT_F(ExpectedIndex, of);
+                ADREPORT_F(CNAA, of);
+                ADREPORT_F(CNAL, of);
+                ADREPORT_F(PCNAA, of);
+                ADREPORT_F(PCNAL, of);
+            }
 #endif
 
             return jnll;

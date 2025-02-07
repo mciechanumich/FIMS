@@ -6,11 +6,11 @@ test_that("Population input settings work as expected", {
   population$log_M <- methods::new(ParameterVector, rep(-1, nyears * nages), nyears * nages)
   population$log_init_naa <- methods::new(ParameterVector, log(rep(1, nages)), nages)
   population$log_init_naa$set_all_estimable(TRUE)
-  population$nages <- nages
-  population$ages <- 1:nages
-  population$nfleets <- 2
-  population$nseasons <- 1
-  population$nyears <- nyears
+  population$nages$set(nages)
+  population$ages$fromR(1:nages)
+  population$nfleets$set(2)
+  population$nseasons$set(1)
+  population$nyears$set(nyears)
 
   expect_equal(population$get_id(), 1)
   for (i in 1:(nyears * nages)) {

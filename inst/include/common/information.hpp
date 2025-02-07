@@ -396,6 +396,8 @@ namespace fims_info {
                 std::shared_ptr<fims_popdy::Population<Type> > p) {
             if (p->recruitment_id != -999) {
                 uint32_t recruitment_uint = static_cast<uint32_t> (p->recruitment_id);
+                FIMS_INFO_LOG("searching for recruitment model "+fims::to_string(recruitment_uint));
+                
                 recruitment_models_iterator it =
                         this->recruitment_models.find(recruitment_uint);
 

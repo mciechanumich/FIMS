@@ -138,7 +138,7 @@ test_that("multinomial_lpdf", {
   dmultinom_ <- methods::new(DmultinomDistribution)
   # populate class members
   dmultinom_$expected_values <- methods::new(ParameterVector, p, 10)
-  dmultinom_$dims <- c(1, 10)
+  dmultinom_$dims$fromR(c(1, 10))
   dmultinom_$x <- methods::new(ParameterVector, as.vector(x), 10)
   # evaluate the density and compare with R
   expect_equal(

@@ -259,3 +259,10 @@ methods::setMethod(
     return(xx)
   }
 )
+
+
+CreateRealVector <- function(values = numeric()) {
+  new(RealVector, values = values)
+}
+
+

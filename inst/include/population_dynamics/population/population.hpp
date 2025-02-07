@@ -485,6 +485,7 @@ namespace fims_popdy {
          *
          */
         void Evaluate() {
+
             /*
               Sets derived vectors to zero
               Performs parameters transformations

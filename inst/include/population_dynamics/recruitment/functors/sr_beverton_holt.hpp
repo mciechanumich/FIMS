@@ -52,7 +52,7 @@ struct SRBevertonHolt : public RecruitmentBase<Type> {
     Type steep_lo = 0.2;
     Type steep_hi = 1.0;
     Type rzero;
-
+    
     // Transform input parameters
     steep = fims_math::inv_logit(steep_lo, steep_hi, this->logit_steep[0]);
     rzero = fims_math::exp(this->log_rzero[0]);
