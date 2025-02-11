@@ -76,7 +76,7 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   clear()
 
   # Extract fishing fleet landings data (observed) and initialize index module
-  catch <- c(t(em_input[["L.obs"]][["fleet1"]]))
+  catch <- em_input[["L.obs"]][["fleet1"]]
   
   # set fishing fleet catch data, need to set dimensions of data index
   # currently FIMS only has a fleet module that takes index for both survey index and fishery catch
@@ -89,11 +89,11 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   
   # Here we fill in the values for the object with the observed age comps for fleet one
   # we multiply these proportions by the sample size for likelihood weighting
-  fishing_fleet_age_comp$age_comp_data$fromR(c(t(em_input[["L.age.obs"]][["fleet1"]]* em_input[["n.L"]][["fleet1"]])))
+  fishing_fleet_age_comp$age_comp_data$fromR(c(t(em_input[["L.age.obs"]][["fleet1"]]))* em_input[["n.L"]][["fleet1"]])
 
   # set fishing fleet length comp data, need to set dimensions of length comps
   fishing_fleet_length_comp <- methods::new(LengthComp, om_input[["nyr"]], om_input[["nlengths"]])
-  fishing_fleet_length_comp$length_comp_data$fromR(c(t(em_input[["L.length.obs"]][["fleet1"]])) * em_input[["n.L.lengthcomp"]][["fleet1"]])
+  fishing_fleet_length_comp$length_comp_data$fromR(c(t(em_input[["L.length.obs"]][["fleet1"]])) * em_input[["n.L.lengthcomp"]][["fleet1"]]) 
 
   # Fleet
   # Create the fishing fleet
@@ -170,16 +170,16 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
 
   # Repeat similar setup for the survey fleet (e.g., index, age comp, and length comp)
   # This includes initializing logistic selectivity, observed data modules, and distribution links.
-  survey_index <- c(t(em_input[["surveyB.obs"]][["survey1"]]))
+  survey_index <- em_input[["surveyB.obs"]][["survey1"]]
   survey_fleet_index <- methods::new(Index, om_input[["nyr"]])
   survey_fleet_index$index_data$fromR(survey_index)
   
   survey_fleet_age_comp <- methods::new(AgeComp, om_input[["nyr"]], om_input[["nages"]])
-  survey_fleet_age_comp$age_comp_data$fromR(c(t(em_input[["survey.age.obs"]][["survey1"]])) * em_input[["n.survey"]][["survey1"]])
-  survey_lengthcomp <- c(t(em_input[["survey.length.obs"]][["survey1"]]))
+  survey_fleet_age_comp$age_comp_data$fromR(c(t(em_input[["survey.age.obs"]][["survey1"]]))* em_input[["n.survey"]][["survey1"]])
+  survey_lengthcomp <- em_input[["survey.length.obs"]][["survey1"]]
   
   survey_fleet_length_comp <- methods::new(LengthComp, om_input[["nyr"]], om_input[["nlengths"]])
-  survey_fleet_length_comp$length_comp_data$fromR(c(t(survey_lengthcomp * em_input[["n.survey.lengthcomp"]][["survey1"]])))
+  survey_fleet_length_comp$length_comp_data$fromR(c(t(survey_lengthcomp))  * em_input[["n.survey.lengthcomp"]][["survey1"]])
   # Fleet
   # Create the survey fleet
   survey_fleet_selectivity <- methods::new(LogisticSelectivity)

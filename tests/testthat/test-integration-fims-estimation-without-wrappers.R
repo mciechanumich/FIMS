@@ -230,7 +230,6 @@ test_that("nll test of fims", {
         survey_lengthcomp_expected[y, ]
       )
   }
-  
   lengthcomp_nll <- lengthcomp_nll_fleet + lengthcomp_nll_survey
 
   expected_jnll <- rec_nll + index_nll + age_comp_nll + lengthcomp_nll
@@ -239,11 +238,11 @@ test_that("nll test of fims", {
   expect_equal(report[["nll_components"]][1], rec_nll)
   expect_equal(report[["nll_components"]][2], index_nll_fleet)
   expect_equal(report[["nll_components"]][3], age_comp_nll_fleet)
-  #expect_equal(report[["nll_components"]][4], lengthcomp_nll_fleet)
+  expect_equal(report[["nll_components"]][4], lengthcomp_nll_fleet)
   expect_equal(report[["nll_components"]][5], index_nll_survey)
   expect_equal(report[["nll_components"]][6], age_comp_nll_survey)
-  #expect_equal(report[["nll_components"]][7], lengthcomp_nll_survey)
-  #expect_equal(report[["jnll"]], expected_jnll)
+  expect_equal(report[["nll_components"]][7], lengthcomp_nll_survey)
+  expect_equal(report[["jnll"]], expected_jnll)
 })
 
 test_that("estimation test of fims", {
