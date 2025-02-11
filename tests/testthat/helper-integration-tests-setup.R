@@ -66,7 +66,7 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
                                                 estimation_mode = TRUE,
                                                 map = list()) {
                                                 
-  set_log_throw_on_error(TRUE)
+   set_log_throw_on_error(TRUE)
    # Load operating model data for the current iteration
   om_input <- om_input_list[[iter_id]] # Operating model input for the current iteration
   om_output <- om_output_list[[iter_id]] # Operating model output for the current iteration
@@ -76,14 +76,17 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   clear()
 
   # Extract fishing fleet landings data (observed) and initialize index module
-  catch <- em_input[["L.obs"]][["fleet1"]]
+  catch <- c(t(em_input[["L.obs"]][["fleet1"]]))
+  
   # set fishing fleet catch data, need to set dimensions of data index
   # currently FIMS only has a fleet module that takes index for both survey index and fishery catch
   fishing_fleet_index <- methods::new(Index, om_input[["nyr"]])
   fishing_fleet_index$index_data$fromR(catch)
+  
   # set fishing fleet age comp data, need to set dimensions of age comps
   # Here the new function initializes the object with length nyr*nages
   fishing_fleet_age_comp <- methods::new(AgeComp, om_input[["nyr"]], om_input[["nages"]])
+  
   # Here we fill in the values for the object with the observed age comps for fleet one
   # we multiply these proportions by the sample size for likelihood weighting
   fishing_fleet_age_comp$age_comp_data$fromR(c(t(em_input[["L.age.obs"]][["fleet1"]]* em_input[["n.L"]][["fleet1"]])))
@@ -97,9 +100,11 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   fishing_fleet_selectivity <- methods::new(LogisticSelectivity)
   fishing_fleet_selectivity$inflection_point[1]$value <- om_input[["sel_fleet"]][["fleet1"]][["A50.sel1"]]
   fishing_fleet_selectivity$inflection_point[1]$is_random_effect <- FALSE
+  
   # turn on estimation of inflection_point
   fishing_fleet_selectivity$inflection_point[1]$estimated <- TRUE
   fishing_fleet_selectivity$slope[1]$value <- om_input[["sel_fleet"]][["fleet1"]][["slope.sel1"]]
+  
   # turn on estimation of slope
   fishing_fleet_selectivity$slope[1]$is_random_effect <- FALSE
   fishing_fleet_selectivity$slope[1]$estimated <- TRUE
@@ -154,11 +159,11 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   # TODO: If an age_to_length_conversion matrix is provided, the code below
   # still executes. Consider adding a check in the Rcpp interface to ensure
   # users provide a vector of inputs.
-  fishing_fleet$age_length_conversion_matrix <- methods::new(
-    ParameterVector,
-    c(t(em_input[["age_to_length_conversion"]])),
-    om_input[["nages"]] * om_input[["nlengths"]]
-  )
+  fishing_fleet$age_length_conversion_matrix$resize(om_input[["nages"]] * om_input[["nlengths"]])
+  for(i in 1:length(em_input[["age_to_length_conversion"]])){
+     fishing_fleet$age_length_conversion_matrix[i]$value<-em_input[["age_to_length_conversion"]][i]
+  }
+
   # Turn off estimation for length-at-age
   fishing_fleet$age_length_conversion_matrix$set_all_estimable(FALSE)
   fishing_fleet$age_length_conversion_matrix$set_all_random(FALSE)
@@ -174,16 +179,18 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   survey_lengthcomp <- c(t(em_input[["survey.length.obs"]][["survey1"]]))
   
   survey_fleet_length_comp <- methods::new(LengthComp, om_input[["nyr"]], om_input[["nlengths"]])
-  survey_fleet_length_comp$length_comp_data$fromR(survey_lengthcomp * em_input[["n.survey.lengthcomp"]][["survey1"]])
+  survey_fleet_length_comp$length_comp_data$fromR(c(t(survey_lengthcomp * em_input[["n.survey.lengthcomp"]][["survey1"]])))
   # Fleet
   # Create the survey fleet
   survey_fleet_selectivity <- methods::new(LogisticSelectivity)
   survey_fleet_selectivity$inflection_point[1]$value <- om_input[["sel_survey"]][["survey1"]][["A50.sel1"]]
   survey_fleet_selectivity$inflection_point[1]$is_random_effect <- FALSE
+ 
   # turn on estimation of inflection_point
   survey_fleet_selectivity$inflection_point[1]$estimated <- TRUE
   survey_fleet_selectivity$slope[1]$value <- om_input[["sel_survey"]][["survey1"]][["slope.sel1"]]
   survey_fleet_selectivity$slope[1]$is_random_effect <- FALSE
+ 
   # turn on estimation of slope
   survey_fleet_selectivity$slope[1]$estimated <- TRUE
 
@@ -203,6 +210,7 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
 
   # Set up survey index data using the lognormal
   survey_fleet_index_distribution <- methods::new(DlnormDistribution)
+  
   # lognormal observation error transformed on the log scale
   # sd = sqrt(log(cv^2 + 1)), sd is log transformed
   survey_fleet_index_distribution$log_sd$resize(om_input[["nyr"]])
@@ -223,11 +231,15 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   survey_fleet_lengthcomp_distribution <- methods::new(DmultinomDistribution)
   survey_fleet_lengthcomp_distribution$set_observed_data(survey_fleet$GetObservedLengthCompDataID())
   survey_fleet_lengthcomp_distribution$set_distribution_links("data", survey_fleet$proportion_catch_numbers_at_length$get_id()) # Set age to length conversion matrix
-  survey_fleet$age_length_conversion_matrix <- methods::new(
-    ParameterVector,
-    c(t(em_input[["age_to_length_conversion"]])),
-    om_input[["nages"]] * om_input[["nlengths"]]
-  )
+ survey_fleet$age_length_conversion_matrix$resize(om_input[["nages"]] * om_input[["nlengths"]])
+  for(i in 1:length(em_input[["age_to_length_conversion"]])){
+     survey_fleet$age_length_conversion_matrix[i]$value <- em_input[["age_to_length_conversion"]][i]
+  }
+  #survey_fleet$age_length_conversion_matrix <- methods::new(
+  #  ParameterVector,
+   # c(t(em_input[["age_to_length_conversion"]])),
+    #om_input[["nages"]] * om_input[["nlengths"]]
+  #)
   # Turn off estimation for length-at-age
   survey_fleet$age_length_conversion_matrix$set_all_estimable(FALSE)
   survey_fleet$age_length_conversion_matrix$set_all_random(FALSE)
@@ -266,13 +278,13 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   # set up logR_sd using the normal log_sd parameter
   # logR_sd is NOT logged. It needs to enter the model logged b/c the exp() is
   # taken before the likelihood calculation
-  recruitment_distribution$log_sd <- methods::new(ParameterVector, 1)
+  recruitment_distribution$log_sd$resize(1)
   recruitment_distribution$log_sd[1]$value <- log(om_input[["logR_sd"]])
   recruitment_distribution$log_sd[1]$estimated <- FALSE
   recruitment_distribution$x$resize(om_input[["nyr"]] - 1)
   recruitment_distribution$expected_values$resize(om_input[["nyr"]] - 1)
   for (i in 1:(om_input[["nyr"]] - 1)) {
-    recruitment_distribution$x[i]$value <- 0
+    recruitment_distribution$x[i]$value <- 1e-4
     recruitment_distribution$expected_values[i]$value <- 0
   }
   recruitment_distribution$set_distribution_links("random_effects", recruitment$log_devs$get_id())
@@ -318,7 +330,7 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   parameters <- list(p = get_fixed())
   obj <- TMB::MakeADFun(
     data = list(), parameters, DLL = "FIMS",
-    silent = TRUE, map = map
+    silent = FALSE, map = map
   )
 
   # Optimization with nlminb

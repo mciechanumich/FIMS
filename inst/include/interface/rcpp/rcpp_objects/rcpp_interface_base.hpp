@@ -641,6 +641,7 @@ public:
      * @brief Convert the data to json representation for the output.
      */
     virtual std::string to_json() {
+        FIMS_WARNING_LOG("Method not yet defined.");
         return "{\"name\" : \"not yet implemented\"}";
     }
 };
