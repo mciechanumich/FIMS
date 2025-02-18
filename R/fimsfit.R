@@ -390,19 +390,78 @@ FIMSFit <- function(
     names(sdreport[["par.fixed"]]) <- parameter_names
     dimnames(sdreport[["cov.fixed"]]) <- list(parameter_names, parameter_names)
     std <- summary(sdreport)
+
+    # Number of rows for derived quantities: based on the difference 
+    # between the total number of rows in std and the length of parameter_names.
+    derived_quantity_nrow <- nrow(std) - length(parameter_names)
+
+    # Create a tibble with the data from the std, and then apply transformations.
     estimates <- tibble::tibble(
       as.data.frame(std)
     ) |>
-      dplyr::rename(value = "Estimate", se = "Std. Error") |>
+      # estimate: estimated parameter value, which would be the MLE estimate or the
+      # value used for a given MCMC iteration
+      # uncertainty: Estimated uncertainty, reported as a standard deviation
+      dplyr::rename(estimate = "Estimate", uncertainty = "Std. Error") |>
+      # label: the name of the parameter or derived quantity
       dplyr::mutate(
-        name = dimnames(std)[[1]],
-        .before = "value"
+        label = dimnames(std)[[1]],
+        .before = "estimate"
+      ) |>
+      # TODO: add column "fleet" (e.g., selectivity parameters needt o be linked
+      # back with fleet1 and survey1)
+      dplyr::mutate(
+        fleet = NA,
+        .before = "estimate"
+      ) |>
+      # TODO: add column "age"
+      dplyr::mutate(
+        age = NA,
+        .before = "estimate"
+      ) |>
+      # TODO: add column "time"
+      dplyr::mutate(
+        time = NA,
+        .before = "estimate"
+      ) |>
+      # initial: the initial value use to start the optimization procedure
+      # Use obj[["env"]][["parameters"]][["p"]] as this will return both initial 
+      # fixed and random effects while obj[["par"]] only returns initial fixed 
+      # effects
+      dplyr::mutate(
+        initial = c(obj[["env"]][["parameters"]][["p"]], rep(NA, derived_quantity_nrow)),
+        .before = "estimate"
+      ) |>
+      # TRUE/FALSE indicator of if the parameter was estimated (and not fixed),
+      # with NA for derived quantities
+      dplyr::mutate(
+        estimated = c(
+          rep(TRUE, length(parameter_names)),
+          rep(NA, derived_quantity_nrow)
+        ),
+        .after = "uncertainty"
+      ) |>
+      # gradient: the gradient component for that parameter, NA for derived quantities
+      dplyr::mutate(
+        gradient = c(obj[["gr"]](opt[["par"]]), rep(NA, derived_quantity_nrow)),
+        .after = "uncertainty"
+      ) |>
+      # likelihood: the likelihood component for that parameter given the prior,
+      # NA for derived quantities.
+      # TODO: What this column is referring to? Is this specific to priors? Is 
+      # it supposed to be the likelihood, log-likelihood, or negative log-likelihood? 
+      # Or is this the prior or posterior probability from a Bayesian perspective? 
+      # The term, 'likelihood' implies the value is with respect to data, 
+      # so we might want to rename this field. 
+      dplyr::mutate(
+        likelihood = NA,
+        .after = "uncertainty"
       )
   } else {
     estimates <- tibble::tibble(
-      name = names(obj[["par"]]),
-      value = obj[["env"]][["parList"]]()[["p"]],
-      se = NA_real_
+      label = names(obj[["par"]]),
+      estimate = obj[["env"]][["parList"]]()[["p"]],
+      uncertainty = NA_real_
     )
   }
 
@@ -475,7 +534,7 @@ fit_fims <- function(input,
   if (number_of_loops < 0) {
     cli::cli_abort("number_of_loops ({.par {number_of_loops}}) must be >= 0.")
   }
-  obj <- MakeADFun(
+  obj <- TMB::MakeADFun(
     data = list(),
     parameters = input$parameters,
     map = input$map,

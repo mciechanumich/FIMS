@@ -47,8 +47,8 @@ validate_fims <- function(
     # Extract estimates based on whether fimsfit is used
     if (use_fimsfit) {
       object <- estimates |>
-        dplyr::filter(name == param_name) |>
-        dplyr::select(value, se)
+        dplyr::filter(label == param_name) |>
+        dplyr::select(estimate, uncertainty)
     } else {
       object <- estimates[(rownames(estimates) == param_name), ]
     }
@@ -94,9 +94,9 @@ validate_fims <- function(
     expect_equal(
       report[["recruitment"]][[1]][1:om_input[["nyr"]]],
       estimates |>
-        dplyr::filter(name == "NAA") |>
+        dplyr::filter(label == "NAA") |>
         dplyr::slice(naa1_id) |>
-        dplyr::pull(value)
+        dplyr::pull(estimate)
     )
   } else {
     expect_equal(

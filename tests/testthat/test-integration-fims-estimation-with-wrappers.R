@@ -57,8 +57,8 @@ test_that("deterministic test of fims", {
 
   # Compare log(R0) to true value
   fims_logR0 <- estimates |>
-    dplyr::filter(name == "log_rzero") |>
-    dplyr::pull(value)
+    dplyr::filter(label == "log_rzero") |>
+    dplyr::pull(estimate)
   expect_gt(fims_logR0, 0.0)
   expect_equal(fims_logR0, log(om_input_list[[iter_id]][["R0"]]))
 
@@ -194,8 +194,8 @@ test_that("nll test of fims", {
 
   # log(R0)
   fims_logR0 <- estimates |>
-    dplyr::filter(name == "log_rzero") |>
-    dplyr::pull(value)
+    dplyr::filter(label == "log_rzero") |>
+    dplyr::pull(estimate)
   expect_equal(fims_logR0, log(om_input_list[[iter_id]][["R0"]]))
 
   # recruitment likelihood
@@ -283,6 +283,12 @@ test_that("estimation test with age and length comp using wrappers", {
     em_input_list = em_input_list,
     estimation_mode = TRUE,
     modified_parameters = modified_parameters
+  )
+
+  # Save FIMS results as a test fixture for additional fimsfit tests
+  saveRDS(
+    get_estimates(result),
+    file = testthat::test_path("fixtures", "estimates_age_length_comp.RDS")
   )
 
   # Compare FIMS results with model comparison project OM values
