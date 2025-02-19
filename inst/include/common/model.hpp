@@ -227,6 +227,7 @@ namespace fims_model {
 #ifdef TMB_MODEL
 
             if (do_tmb_reporting) {
+                std::cout<<"Gathering TMB report...";
                 //FIMS_REPORT_F(rec_nll, of);
                 //FIMS_REPORT_F(age_comp_nll, of);
                 //FIMS_REPORT_F(index_nll, of);
@@ -275,6 +276,7 @@ namespace fims_model {
                 ADREPORT_F(CNAL, of);
                 ADREPORT_F(PCNAA, of);
                 ADREPORT_F(PCNAL, of);
+                std::cout<<"done."<<std::endl;
             }
 #endif
 

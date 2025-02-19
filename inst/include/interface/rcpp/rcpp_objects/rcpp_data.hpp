@@ -249,7 +249,7 @@ public:
      * rank of 2, the dimensions by printing ymax and lmax, followed by the data
      * values themselves. This string is formatted for a json file.
      */
-    virtual std::string to_json_() {
+    virtual std::string to_json() {
         std::stringstream ss;
 
         ss << "{\n";

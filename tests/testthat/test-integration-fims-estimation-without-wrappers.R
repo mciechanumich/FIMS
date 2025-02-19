@@ -243,6 +243,26 @@ test_that("nll test of fims", {
   expect_equal(report[["nll_components"]][6], age_comp_nll_survey)
   expect_equal(report[["nll_components"]][7], lengthcomp_nll_survey)
   expect_equal(report[["jnll"]], expected_jnll)
+  cat(report[["nll_components"]])
+  cat("\n")
+  cat(rec_nll)
+  cat("\n")
+  cat( index_nll_fleet)
+  cat("\n")
+  cat(age_comp_nll_fleet)
+  cat("\n")
+  cat(lengthcomp_nll_fleet)
+  cat("\n")
+  cat( index_nll_survey)
+  cat("\n")
+  cat( age_comp_nll_survey)
+  cat("\n")
+  cat(lengthcomp_nll_survey)
+
+  #print(result)
+  q()
+  
+   write(finalize(opt$par, obj$fn, obj$gr),"outo.json")
 })
 
 test_that("estimation test of fims", {

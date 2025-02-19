@@ -91,10 +91,36 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   # we multiply these proportions by the sample size for likelihood weighting
   fishing_fleet_age_comp$age_comp_data$fromR(c(t(em_input[["L.age.obs"]][["fleet1"]]))* em_input[["n.L"]][["fleet1"]])
 
+  lc<-c(t(em_input[["L.length.obs"]][["fleet1"]])) * em_input[["n.L.lengthcomp"]][["fleet1"]]
+  index<-1
+  index2<-1
+  lc2<-rep(0.0, times = (om_input[["nyr"]]*om_input[["nlengths"]]))
+  for(y in 1:om_input[["nyr"]]){
+    sum<-0
+    for(a in 1:om_input[["nlengths"]]){
+      sum<-sum+lc[index]
+      result3 <- format( lc[index], scientific=FALSE,digits=6)
+      cat(result3)
+      cat(" ")
+      index<-index+1
+    }
+    
+    for(a in 1:om_input[["nlengths"]]){
+      lc2[index2]<-lc[index2]/sum
+     
+      index2<-index2+1
+    }
+    cat("\n")
+  }
+  
+
+  # q()
+  
   # set fishing fleet length comp data, need to set dimensions of length comps
   fishing_fleet_length_comp <- methods::new(LengthComp, om_input[["nyr"]], om_input[["nlengths"]])
-  fishing_fleet_length_comp$length_comp_data$fromR(c(t(em_input[["L.length.obs"]][["fleet1"]])) * em_input[["n.L.lengthcomp"]][["fleet1"]]) 
-
+   fishing_fleet_length_comp$length_comp_data$fromR(15.756609*c(t(em_input[["L.length.obs"]][["fleet1"]])))# * em_input[["n.L.lengthcomp"]][["fleet1"]]) 
+  #fishing_fleet_length_comp$length_comp_data$fromR(lc2)
+#q()
   # Fleet
   # Create the fishing fleet
   fishing_fleet_selectivity <- methods::new(LogisticSelectivity)
@@ -154,7 +180,7 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   fishing_fleet_lengthcomp_distribution <- methods::new(DmultinomDistribution)
   fishing_fleet_lengthcomp_distribution$set_observed_data(fishing_fleet$GetObservedLengthCompDataID())
   fishing_fleet_lengthcomp_distribution$set_distribution_links("data", fishing_fleet$proportion_catch_numbers_at_length$get_id())
-
+  fishing_fleet_lengthcomp_distribution$set_note("fishing_fleet_lengthcomp_distribution")
   # Set age-to-length conversion matrix
   # TODO: If an age_to_length_conversion matrix is provided, the code below
   # still executes. Consider adding a check in the Rcpp interface to ensure
@@ -337,9 +363,15 @@ setup_and_run_FIMS_without_wrappers <- function(iter_id,
   opt <- NULL
   if (estimation_mode == TRUE) {
     opt <- stats::nlminb(obj[["par"]], obj[["fn"]], obj[["gr"]],
-      control = list(eval.max = 10000, iter.max = 10000, trace = 0)
+      control = list(eval.max = 10000, iter.max = 10000, trace = 1)
     )
+    
+   
+     write(finalize(opt$par, obj$fn, obj$gr),"outo.json")
   }
+  
+  #write(finalize(obj$par, obj$fn, obj$gr),"outno.json")
+  
   # Call report using MLE parameter values, or
   # the initial values if optimization is skipped
   report <- obj[["report"]](obj[["env"]][["last.par.best"]])

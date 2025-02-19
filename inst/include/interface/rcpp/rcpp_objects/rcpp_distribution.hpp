@@ -588,6 +588,8 @@ public:
      */
     RealVector lpdf_vec; /**< The vector */
 
+    SharedString notes;
+    
     /**
      * @brief The constructor.
      */
@@ -596,7 +598,7 @@ public:
     }
 
     DmultinomDistributionsInterface(const DmultinomDistributionsInterface& other) :
-    DistributionsInterfaceBase(other), x(other.x), expected_values(other.expected_values), dims(other.dims), lpdf_vec(other.lpdf_vec) {
+    DistributionsInterfaceBase(other), x(other.x), expected_values(other.expected_values), dims(other.dims), lpdf_vec(other.lpdf_vec), notes(other.notes) {
     }
 
     /**
@@ -633,9 +635,13 @@ public:
         this->input_type_m.set(input_type);
         this->key_m->resize(ids.size());
         for (int i = 0; i < ids.size(); i++) {
-            this->key_m->at(i)= ids[i];
+            this->key_m->at(i) = ids[i];
         }
         return true;
+    }
+    
+    void set_note(std::string note){
+        this->notes.set(note);
     }
 
     /**
@@ -660,15 +666,73 @@ public:
         dmultinom.dims[1] = this->dims[1];
         return dmultinom.evaluate();
     }
-    virtual std::string to_json() {
-        return "{\"name\": \"multinomial\"}";
+
+    void finalize() {
+        if (this->finalized) {
+            //log warning that finalize has been called more than once.
+            FIMS_WARNING_LOG("DmultinomDistributions  " + fims::to_string(this->id_m) + " has been finalized already.");
+        }
+
+        this->finalized = true; //indicate this has been called already
+
+        std::shared_ptr<fims_info::Information<double> > info =
+                fims_info::Information<double>::GetInstance();
+
+        fims_info::Information<double>::density_components_iterator it;
+
+        //search for density component in Information
+        it = info->density_components.find(this->id_m);
+        //if not found, just return
+        if (it == info->density_components.end()) {
+            FIMS_WARNING_LOG("DmultinomDistributions " + fims::to_string(this->id_m) + " not found in Information.");
+            return;
+        } else {
+            std::shared_ptr<fims_distributions::MultinomialLPMF<double> > dmultinom =
+                    std::dynamic_pointer_cast<fims_distributions::MultinomialLPMF<double> >(it->second);
+            this->lpdf_vec = Rcpp::NumericVector(dmultinom->lpdf_vec.size());
+            for (R_xlen_t i = 0; i < this->lpdf_vec.size(); i++) {
+                this->lpdf_vec[i] = dmultinom->lpdf_vec[i];
+            }
+        }
     }
+
+    /**
+     * @brief Converts the data to json representation for the output.
+     * @return A string is returned specifying that the module relates to the
+     * distribution interface with a log_normal distribution. It also returns the
+     * ID and the natural log of the probability density function values
+     * themselves. This string is formatted for a json file.
+     */
+    virtual std::string to_json() {
+        std::stringstream ss;
+
+        ss << "{\n";
+        ss << " \"name\": \"Dmultinom\",\n";
+        ss << " \"type\": \"Dmultinom\",\n";
+        ss << " \"id\": " << this->id_m << ",\n";
+        ss << " \"note\": \"" << this->notes.get() << "\",\n";
+        ss << " \"density_component\": {\n";
+        ss << "  \"name\": \"lpdf_vec\",\n";
+        ss << "  \"values\":[";
+        if (this->lpdf_vec.size() == 0) {
+            ss << "]\n";
+        } else {
+            for (R_xlen_t i = 0; i < this->lpdf_vec.size() - 1; i++) {
+                ss << this->lpdf_vec[i] << ", ";
+            }
+            ss << this->lpdf_vec[this->lpdf_vec.size() - 1] << "]\n";
+        }
+        ss << " }}\n";
+
+        return ss.str();
+    }
+
 
 #ifdef TMB_MODEL
 
     template <typename Type>
     bool add_to_fims_tmb_internal() {
-        
+
         FIMS_INFO_LOG("adding multinomial to FIMS.");
         std::shared_ptr<fims_info::Information < Type>> info =
                 fims_info::Information<Type>::GetInstance();
@@ -693,14 +757,14 @@ public:
         for (size_t i = 0; i<this->expected_values.size(); i++) {
             distribution->expected_values[i] = this->expected_values[i].initial_value_m;
         }
-//        if (this->dims.size() > 0) {
-//            distribution->dims.resize(2);
-//            distribution->dims[0] = this->dims[0];
-//            distribution->dims[1] = this->dims[1];
-//        }
+        //        if (this->dims.size() > 0) {
+        //            distribution->dims.resize(2);
+        //            distribution->dims[0] = this->dims[0];
+        //            distribution->dims[1] = this->dims[1];
+        //        }
 
         info->density_components[distribution->id] = distribution;
-FIMS_INFO_LOG("done adding multinomial to FIMS.");
+        FIMS_INFO_LOG("done adding multinomial to FIMS.");
         return true;
     }
 

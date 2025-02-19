@@ -621,8 +621,8 @@ RCPP_MODULE(fims) {
             .constructor<int>()
             .method("get", &SharedInt::get)
             .method("set", &SharedInt::set);
-    
-        Rcpp::class_<SharedBoolean>(
+
+    Rcpp::class_<SharedBoolean>(
             "SharedBoolean",
             "An RcppInterface class that defines the SharedBoolean class.")
             .constructor()
@@ -777,6 +777,7 @@ RCPP_MODULE(fims) {
             .method("evaluate", &DmultinomDistributionsInterface::evaluate, "Evaluates the normal distribution given input data and parameter values.")
             .method("set_observed_data", &DmultinomDistributionsInterface::set_observed_data, "Accepts a unique ID for a given Data Object class to link the data with the distribution.")
             .method("set_distribution_links", &DmultinomDistributionsInterface::set_distribution_links, "Accepts a unique ID for a given parameter to link the parameter with the distribution.")
+            .method("set_note",&DmultinomDistributionsInterface::set_note)
             .field("x", &DmultinomDistributionsInterface::x, "Input for distribution when not observations, e.g., prior or random effect.")
             .field("expected_values", &DmultinomDistributionsInterface::expected_values, "numeric non-negative vector of length K, specifying the probability for the K classes.")
             .field("dims", &DmultinomDistributionsInterface::dims, "dimension of the multivariate input, e.g., c(num rows, num cols).");
