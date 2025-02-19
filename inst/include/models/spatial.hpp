@@ -1,0 +1,5 @@
+#ifndef FIMS_MODELS_SPATIAL_HPP
+#define FIMS_MODELs_SPATIAL_HPP
+
+
+#endif

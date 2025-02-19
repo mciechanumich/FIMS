@@ -1,0 +1,4 @@
+#ifndef FIMS_MODELS_CATACH_AT_AGE_HPP
+#define FIMS_MODELS_CATACH_AT_AGE_HPP
+
+#endif

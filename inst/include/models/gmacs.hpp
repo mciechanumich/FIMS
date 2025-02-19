@@ -1,0 +1,4 @@
+#ifndef FIMS_MODELS_GMACS_HPP
+#define FIMS_MODELS_GMACS_HPP
+
+#endif
