@@ -15,11 +15,9 @@ namespace fims_popdy {
 
     public:
         std::vector<std::shared_ptr<fims_popdy::Population> > populations;
-        
-        CatchAtAge() {
-        }
 
-        
+        CatchAtAge() : FisheryModelBase<Type>() {
+        }
 
         virtual void Intialize() {
             for (size_t i = 0; i < this->populations.size(); i++) {
@@ -51,14 +49,81 @@ namespace fims_popdy {
             }
         }
 
-        virtual void Evaluate() {
-            for (size_t i = 0; i < this->populations.size(); i++) {
-                // this->populations[i]->Evaluate();
-            }
+        void Prepare() {
+
         }
 
         void AddPopulation(uint32_t id) {
             this->population_ids.insert(id);
+        }
+
+        void CalculateInitialNumbersAA() {
+
+        }
+
+        void CalculateNumbersAA() {
+
+        }
+
+        void CalculateUnfishedNumbersAA() {
+
+        }
+
+        void CalculateMortality() {
+
+        }
+
+        void CalculateBiomass() {
+
+        }
+
+        void CalculateUnfishedBiomass() {
+
+        }
+
+        void CalculateSpawningBiomass() {
+
+        }
+
+        void CalculateUnfishedSpawningBiomass() {
+
+        }
+
+
+        //matthew: changed to void
+
+        void CalculateSBPR0() {
+
+        }
+
+        void CalculateRecruitment() {
+
+        }
+
+        void CalculateCatch() {
+
+        }
+
+        void CalculateIndex() {
+
+        }
+
+        void CalculateCatchNumbersAA() {
+
+        }
+
+        void CalculateCatchWeightAA() {
+
+        }
+
+        void CalculateMaturityAA() {
+
+        }
+
+        virtual void Evaluate() {
+            for (size_t i = 0; i < this->populations.size(); i++) {
+                // this->populations[i]->Evaluate();
+            }
         }
     };
 
