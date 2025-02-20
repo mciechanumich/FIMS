@@ -417,7 +417,7 @@ FIMSFit <- function(
       separate_wider_delim(
         label,
         delim = ".",
-        names = c("module", "label", "id", "i"),
+        names = c("module", "label", "id", "index"),
         too_few = "align_start"
       ) |>
       # TODO: add column "fleet" (e.g., selectivity parameters needt o be linked
