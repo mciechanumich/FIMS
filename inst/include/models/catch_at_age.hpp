@@ -15,6 +15,11 @@ namespace fims_popdy {
 
     public:
         std::vector<std::shared_ptr<fims_popdy::Population> > populations;
+        
+        CatchAtAge() {
+        }
+
+        
 
         virtual void Intialize() {
             for (size_t i = 0; i < this->populations.size(); i++) {
