@@ -100,6 +100,9 @@ namespace fims_popdy {
         // available anywhere in the R package
 #endif
 
+        
+        std::map<std::string, fims::Vector<Type> > derived_quantities;
+        
         // this -> means you're referring to a class member (member of self)
 
         Population() {
