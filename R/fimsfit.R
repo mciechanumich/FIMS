@@ -386,12 +386,19 @@ FIMSFit <- function(
     obj[["report"]]()
   }
 
+  find_fleet <- function(input) {
+    if ("selectivity" %in% names(input$module_ids[[parent]])) {
+      tibble::tibble(parent = parent, id = unlist(input$module_ids[[parent]]["selectivity"]))
+  }
+
+  unlist_module_ids <- unlist(input$module_ids)
+
   if (length(sdreport) > 0) {
     names(sdreport[["par.fixed"]]) <- parameter_names
     dimnames(sdreport[["cov.fixed"]]) <- list(parameter_names, parameter_names)
     std <- summary(sdreport)
 
-    # Number of rows for derived quantities: based on the difference 
+    # Number of rows for derived quantities: based on the difference
     # between the total number of rows in std and the length of parameter_names.
     derived_quantity_nrow <- nrow(std) - length(parameter_names)
 
@@ -403,10 +410,15 @@ FIMSFit <- function(
       # value used for a given MCMC iteration
       # uncertainty: Estimated uncertainty, reported as a standard deviation
       dplyr::rename(estimate = "Estimate", uncertainty = "Std. Error") |>
-      # label: the name of the parameter or derived quantity
       dplyr::mutate(
         label = dimnames(std)[[1]],
         .before = "estimate"
+      ) |>
+      separate_wider_delim(
+        label,
+        delim = ".",
+        names = c("module", "label", "id", "i"),
+        too_few = "align_start"
       ) |>
       # TODO: add column "fleet" (e.g., selectivity parameters needt o be linked
       # back with fleet1 and survey1)
@@ -425,8 +437,8 @@ FIMSFit <- function(
         .before = "estimate"
       ) |>
       # initial: the initial value use to start the optimization procedure
-      # Use obj[["env"]][["parameters"]][["p"]] as this will return both initial 
-      # fixed and random effects while obj[["par"]] only returns initial fixed 
+      # Use obj[["env"]][["parameters"]][["p"]] as this will return both initial
+      # fixed and random effects while obj[["par"]] only returns initial fixed
       # effects
       dplyr::mutate(
         initial = c(obj[["env"]][["parameters"]][["p"]], rep(NA, derived_quantity_nrow)),
@@ -448,15 +460,21 @@ FIMSFit <- function(
       ) |>
       # likelihood: the likelihood component for that parameter given the prior,
       # NA for derived quantities.
-      # TODO: What this column is referring to? Is this specific to priors? Is 
-      # it supposed to be the likelihood, log-likelihood, or negative log-likelihood? 
-      # Or is this the prior or posterior probability from a Bayesian perspective? 
-      # The term, 'likelihood' implies the value is with respect to data, 
-      # so we might want to rename this field. 
+      # TODO: What this column is referring to? Is this specific to priors? Is
+      # it supposed to be the likelihood, log-likelihood, or negative log-likelihood?
+      # Or is this the prior or posterior probability from a Bayesian perspective?
+      # The term, 'likelihood' implies the value is with respect to data,
+      # so we might want to rename this field.
       dplyr::mutate(
         likelihood = NA,
         .after = "uncertainty"
       )
+
+      for (i in 1:nrow(estimates)){
+        condition <- which(as.numeric(estimates[["id"]][i]) == unlist_module_ids[grepl(estimates[["module"]][i], names(unlist_module_ids))])
+        if (length(condition) > 0) estimates[["fleet"]][i] <- strsplit(names(condition), estimates[["module"]][i])[[1]][1]
+      }
+
   } else {
     estimates <- tibble::tibble(
       label = names(obj[["par"]]),
