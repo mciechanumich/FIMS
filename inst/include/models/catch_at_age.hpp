@@ -1,7 +1,7 @@
 #ifndef FIMS_MODELS_CATACH_AT_AGE_HPP
 #define FIMS_MODELS_CATACH_AT_AGE_HPP
 
-#include <regex>
+#include <set>
 
 #include "fishery_model_base.hpp"
 #include "../population_dynamics/population/population.hpp"
@@ -17,7 +17,7 @@ namespace fims_popdy {
 
     public:
         std::set<uint32_t> population_ids;
-        std::vector<std::shared_ptr<fims_popdy::Population> > populations;
+        std::vector<std::shared_ptr<fims_popdy::Population<Type> > > populations;
 
         CatchAtAge() : FisheryModelBase<Type>() {
         }
@@ -69,15 +69,14 @@ namespace fims_popdy {
         void AddPopulation(uint32_t id) {
             this->population_ids.insert(id);
         }
-        
-        std::set<uint32_t>& GetPopulationIds() const {
+
+        std::set<uint32_t>& GetPopulationIds() {
             return population_ids;
         }
 
-        std::vector<std::shared_ptr<fims_popdy::Population> >& GetPopulations() const {
+        std::vector<std::shared_ptr<fims_popdy::Population<Type> > >& GetPopulations() {
             return populations;
         }
-
 
         void CalculateInitialNumbersAA(size_t i_age_year, size_t a) {
             for (size_t p = 0; p < this->populations.size(); p++) {
@@ -135,7 +134,7 @@ namespace fims_popdy {
                         this->populations[p]->derived_quantities["mortality_F"][i_age_year] +=
                                 this->populations[p]->fleets[fleet_]->Fmort[year] *
                                 // evaluate is a member function of the selectivity class
-                                this->populations[p]->fleets[[fleet_]->selectivity->evaluate(this->populations[p]->ages[age]);
+                                this->populations[p]->fleets[fleet_]->selectivity->evaluate(this->populations[p]->ages[age]);
                     }
                 }
             }
@@ -189,21 +188,21 @@ namespace fims_popdy {
                 Type phi_0 = 0.0;
                 phi_0 += numbers_spr[0] * this->populations[p]->proportion_female[0] *
                         this->populations[p]->proportion_mature_at_age[0] *
-                        this->populations[p]->growth->evaluate(ages[0]);
+                        this->populations[p]->growth->evaluate(this->populations[p]->ages[0]);
                 for (size_t a = 1; a < (this->populations[p]->nages - 1); a++) {
                     numbers_spr[a] = numbers_spr[a - 1] * fims_math::exp(-this->populations[p]->M[a]);
                     phi_0 += numbers_spr[a] * this->proportion_female[a] *
                             this->populations[p]->proportion_mature_at_age[a] *
-                            this->populations[p]->growth->evaluate(ages[a]);
+                            this->populations[p]->growth->evaluate(this->populations[p]->ages[a]);
                 }
 
-                numbers_spr[this->nages - 1] =
-                        (numbers_spr[nages - 2] * fims_math::exp(-this->populations[p]->M[nages - 2])) /
+                numbers_spr[this->populations[p]->nages - 1] =
+                        (numbers_spr[this->populations[p]->nages - 2] * fims_math::exp(-this->populations[p]->M[this->populations[p]->nages - 2])) /
                         (1 - fims_math::exp(-this->populations[p]->M[this->populations[p]->nages - 1]));
                 phi_0 += numbers_spr[this->populations[p]->nages - 1] *
-                        this->populations[p]->proportion_female[this->nages - 1] *
-                        this->populations[p]->proportion_mature_at_age[this->nages - 1] *
-                        this->populations[p]->growth->evaluate(ages[this->nages - 1]);
+                        this->populations[p]->proportion_female[this->populations[p]->nages - 1] *
+                        this->populations[p]->proportion_mature_at_age[this->populations[p]->nages - 1] *
+                        this->populations[p]->growth->evaluate(this->populations[p]->ages[this->populations[p]->nages - 1]);
                 phis.push_back(phi_0);
             }
 
@@ -271,7 +270,7 @@ namespace fims_popdy {
                                 this->populations[p]->derived_quantities["weight_at_age"][age];
                     } else {
                         index_ = this->populations[p]->fleets[fleet_]->q.get_force_scalar(year) *
-                                this->populations[p]->fleets[fleet_]->selectivity->evaluate(ages[age]) *
+                                this->populations[p]->fleets[fleet_]->selectivity->evaluate(this->populations[p]->ages[age]) *
                                 this->populations[p]->derived_quantities["numbers_at_age"][i_age_year] *
                                 this->populations[p]->derived_quantities["weight_at_age"][age]; // this->weight_at_age[age];
                     }
@@ -290,12 +289,12 @@ namespace fims_popdy {
                     // Baranov Catch Equation
                     if (this->populations[p]->fleets[fleet_]->is_survey == false) {
                         catch_ = (this->populations[p]->fleets[fleet_]->Fmort[year] *
-                                this->populations[p]->fleets[fleet_]->selectivity->evaluate(ages[age])) /
+                                this->populations[p]->fleets[fleet_]->selectivity->evaluate(this->populations[p]->ages[age])) /
                                 this->populations[p]->derived_quantities["mortality_Z"][i_age_year] *
                                 this->populations[p]->derived_quantities["numbers_at_age"][i_age_year] *
                                 (1 - fims_math::exp(-(this->populations[p]->derived_quantities["mortality_Z"][i_age_year])));
                     } else {
-                        catch_ = (this->populations[p]->fleets[fleet_]->selectivity->evaluate(ages[age])) *
+                        catch_ = (this->populations[p]->fleets[fleet_]->selectivity->evaluate(this->populations[p]->ages[age])) *
                                 this->populations[p]->derived_quantities["numbers_at_age"][i_age_year];
                     }
 
@@ -434,9 +433,11 @@ namespace fims_popdy {
                                     fims_math::exp(this->recruitment->log_rzero[0]);
 
                         } else {
-                            size_t i_agem1_yearm1 = (y - 1) * nages + (a - 1);
-                            CalculateNumbersAA(i_age_year, i_agem1_yearm1, a);
-                            CalculateUnfishedNumbersAA(i_age_year, i_agem1_yearm1, a);
+#warning this segment needs restructuring
+                            size_t i_agem1_yearm1 = (y - 1) * this->nages + (a - 1);
+                                CalculateNumbersAA(i_age_year, i_agem1_yearm1, a);
+                                CalculateUnfishedNumbersAA(i_age_year, i_agem1_yearm1, a);
+                            
                         }
                         CalculateBiomass(i_age_year, y, a);
                         CalculateSpawningBiomass(i_age_year, y, a);

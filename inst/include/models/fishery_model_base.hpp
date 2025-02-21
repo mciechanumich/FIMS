@@ -1,19 +1,20 @@
 #ifndef FIMS_MODELS_FISHERY_MODEL_BASE_HPP
 #define FIMS_MODELS_FISHERY_MODEL_BASE_HPP
 
-#include "../../common/model_object.hpp"
-
+#include "../common/model_object.hpp"
+#include "../common/fims_math.hpp"
+#include "../common/fims_vector.hpp"
 
 namespace fims_popdy {
 
     template<typename Type>
-    class FisheryModelBase public fims_model_object::FIMSObject<Type> {
+    class FisheryModelBase : public fims_model_object::FIMSObject<Type> {
         static uint32_t id_g;
         uint32_t id;
     public:
 
         FisheryModelBase() :
-         id(FisheryModelBase::id_g++) {
+        id(FisheryModelBase::id_g++) {
 
         }
 
