@@ -101,7 +101,7 @@ namespace fims_popdy {
 #endif
 
         
-        std::map<std::string, fims::Vector<Type> > derived_quantities;
+        std::map<std::string, fims::Vector<Type> > derived_quantities;/*!< derived quantities for specific model type, i.e. caa, surplus production, etc */
         
         // this -> means you're referring to a class member (member of self)
 
