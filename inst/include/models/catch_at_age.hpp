@@ -87,10 +87,12 @@ namespace fims_popdy {
 
         void CalculateNumbersAA(
                 size_t i_age_year,
-                size_t i_agem1_yearm1,
+                size_t y,
                 size_t age) {
             // using Z from previous age/year
             for (size_t p = 0; p < this->populations.size(); p++) {
+
+                size_t i_agem1_yearm1 = (y - 1) * this->populations[p]->nages + (age - 1);
                 this->populations[p]->derived_quantities["numbers_at_age"][i_age_year] =
                         this->populations[p]->derived_quantities["numbers_at_age"][i_agem1_yearm1] *
                         (fims_math::exp(-this->populations[p]->derived_quantities["mortality_Z"][i_agem1_yearm1]));
@@ -106,10 +108,11 @@ namespace fims_popdy {
         }
 
         void CalculateUnfishedNumbersAA(size_t i_age_year,
-                size_t i_agem1_yearm1, size_t age) {
+                size_t y, size_t age) {
 
             for (size_t p = 0; p < this->populations.size(); p++) {
 
+                size_t i_agem1_yearm1 = (y - 1) * this->populations[p]->nages + (age - 1);
                 // using M from previous age/year
                 this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_age_year] =
                         this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_agem1_yearm1] *
@@ -433,11 +436,14 @@ namespace fims_popdy {
                                     fims_math::exp(this->recruitment->log_rzero[0]);
 
                         } else {
-#warning this segment needs restructuring
-                            size_t i_agem1_yearm1 = (y - 1) * this->nages + (a - 1);
-                                CalculateNumbersAA(i_age_year, i_agem1_yearm1, a);
-                                CalculateUnfishedNumbersAA(i_age_year, i_agem1_yearm1, a);
-                            
+#warning this segment was restructured by matthew
+                            //because populations may differ in the values of nyearsm nages
+                            //the calculation for the i_agem1_yearm1 is now in the methods 
+                            //listed below, within the population loop
+                            //size_t i_agem1_yearm1 = (y - 1) * this->nages + (a - 1);
+                            CalculateNumbersAA(i_age_year, y, a);
+                            CalculateUnfishedNumbersAA(i_age_year, y, a);
+
                         }
                         CalculateBiomass(i_age_year, y, a);
                         CalculateSpawningBiomass(i_age_year, y, a);
