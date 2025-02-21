@@ -85,15 +85,31 @@ namespace fims_popdy {
                 // Plus group calculation
                 if (age == (this->nages - 1)) {
                     this->populations[p]->derived_quantities["numbers_at_age"][i_age_year] =
-                              this->populations[p]->derived_quantities["numbers_at_age"][i_age_year] +
-                              this->populations[p]->derived_quantities["numbers_at_age"][i_agem1_yearm1 + 1] *
+                            this->populations[p]->derived_quantities["numbers_at_age"][i_age_year] +
+                            this->populations[p]->derived_quantities["numbers_at_age"][i_agem1_yearm1 + 1] *
                             (fims_math::exp(-this->populations[p]->derived_quantities["mortality_Z"][i_agem1_yearm1 + 1]));
                 }
             }
         }
 
-        void CalculateUnfishedNumbersAA() {
+        void CalculateUnfishedNumbersAA(size_t i_age_year,
+                size_t i_agem1_yearm1, size_t age) {
 
+            for (size_t p = 0; p < this->populations.size(); p++) {
+
+                // using M from previous age/year
+                this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_age_year] =
+                        this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_agem1_yearm1] *
+                        (fims_math::exp(-this->populations[p]->derived_quantities["M"][i_agem1_yearm1]));
+
+                // Plus group calculation
+                if (age == (this->nages - 1)) {
+                   this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_age_year] =
+                            this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_age_year] +
+                            this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_agem1_yearm1 + 1] *
+                            (fims_math::exp(-this->populations[p]->derived_quantities["M"][i_agem1_yearm1 + 1]));
+                }
+            }
         }
 
         void CalculateMortality() {
