@@ -104,7 +104,7 @@ namespace fims_popdy {
 
                 // Plus group calculation
                 if (age == (this->nages - 1)) {
-                   this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_age_year] =
+                    this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_age_year] =
                             this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_age_year] +
                             this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_agem1_yearm1 + 1] *
                             (fims_math::exp(-this->populations[p]->derived_quantities["M"][i_agem1_yearm1 + 1]));
@@ -112,8 +112,19 @@ namespace fims_popdy {
             }
         }
 
-        void CalculateMortality() {
-
+        void CalculateMortality(
+                size_t i_age_year, size_t year, size_t age) {
+            
+            for (size_t p = 0; p < this->populations.size(); p++) {
+                for (size_t fleet_ = 0; fleet_ < this->populations[p]->nfleets; fleet_++) {
+                    if (this->populations[p]->fleets[fleet_]->is_survey == false) {
+                        this->populations[p]->derived_quantities["mortality_F"][i_age_year] +=
+                                this->populations[p]->fleets[fleet_]->Fmort[year] *
+                                // evaluate is a member function of the selectivity class
+                                this->populations[p]->fleets[[fleet_]->selectivity->evaluate(this->populations[p]->ages[age]);
+                    }
+                }
+            }
         }
 
         void CalculateBiomass() {
