@@ -13,9 +13,10 @@ namespace fims_popdy {
     public:
 
 
-        std::set<uint32_t> population_ids;
+
 
     public:
+        std::set<uint32_t> population_ids;
         std::vector<std::shared_ptr<fims_popdy::Population> > populations;
 
         CatchAtAge() : FisheryModelBase<Type>() {
@@ -23,6 +24,9 @@ namespace fims_popdy {
 
         virtual void Intialize() {
             for (size_t i = 0; i < this->populations.size(); i++) {
+
+
+
                 this->populations[i]->derived_quantities["mortality_F"] =
                         fims::Vector<Type>(this->populations[i]->nyears *
                         this->populations[i]->nages);
@@ -65,6 +69,15 @@ namespace fims_popdy {
         void AddPopulation(uint32_t id) {
             this->population_ids.insert(id);
         }
+        
+        std::set<uint32_t>& GetPopulationIds() const {
+            return population_ids;
+        }
+
+        std::vector<std::shared_ptr<fims_popdy::Population> >& GetPopulations() const {
+            return populations;
+        }
+
 
         void CalculateInitialNumbersAA(size_t i_age_year, size_t a) {
             for (size_t p = 0; p < this->populations.size(); p++) {
@@ -101,14 +114,14 @@ namespace fims_popdy {
                 // using M from previous age/year
                 this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_age_year] =
                         this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_agem1_yearm1] *
-                        (fims_math::exp(-this->populations[p]->derived_quantities["M"][i_agem1_yearm1]));
+                        (fims_math::exp(-this->populations[p]->M[i_agem1_yearm1]));
 
                 // Plus group calculation
                 if (age == (this->nages - 1)) {
                     this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_age_year] =
                             this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_age_year] +
                             this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_agem1_yearm1 + 1] *
-                            (fims_math::exp(-this->populations[p]->derived_quantities["M"][i_agem1_yearm1 + 1]));
+                            (fims_math::exp(-this->populations[p]->M[i_agem1_yearm1 + 1]));
                 }
             }
         }
@@ -312,15 +325,142 @@ namespace fims_popdy {
 
         void CalculateMaturityAA(size_t i_age_year, size_t age) {
             for (size_t p = 0; p < this->populations.size(); p++) {
-                 this->populations[p]->proportion_mature_at_age[i_age_year] =
-                         this->populations[p]->maturity->evaluate( this->populations[p]->ages[age]);
+                this->populations[p]->proportion_mature_at_age[i_age_year] =
+                        this->populations[p]->maturity->evaluate(this->populations[p]->ages[age]);
             }
         }
 
         virtual void Evaluate() {
-            for (size_t i = 0; i < this->populations.size(); i++) {
-                // this->populations[i]->Evaluate();
+            /*
+             Sets derived vectors to zero
+             Performs parameters transformations
+             Sets recruitment deviations to mean 0.
+             */
+            Prepare();
+            /*
+             start at year=0, age=0;
+             here year 0 is the estimated initial population structure and age 0 are recruits
+             loops start at zero with if statements inside to specify unique code for
+             initial structure and recruitment 0 loops. Could also have started loops at
+             1 with initial structure and recruitment setup outside the loops.
+
+             year loop is extended to <= nyears because SSB is calculted as the start of
+             the year value and by extending one extra year we get estimates of the
+             population structure at the end of the final year. An alternative approach
+             would be to keep initial numbers at age in it's own vector and each year to
+             include the population structure at the end of the year. This is likely a
+             null point given that we are planning to modify to an event/stanza based
+             structure in later milestones which will elimitate this confusion by
+             explicity referencing the exact date (or period of averaging) at which any
+             calculation or output is being made.
+             */
+            for (size_t y = 0; y <= this->nyears; y++) {
+                for (size_t a = 0; a < this->nages; a++) {
+                    /*
+                     index naming defines the dimensional folding structure
+                     i.e. i_age_year is referencing folding over years and ages.
+                     */
+                    size_t i_age_year = y * this->nages + a;
+                    /*
+                     Mortality rates are not estimated in the final year which is
+                     used to show expected population structure at the end of the model period.
+                     This is because biomass in year i represents biomass at the start of
+                     the year.
+                     Should we add complexity to track more values such as start,
+                     mid, and end biomass in all years where, start biomass=end biomass of
+                     the previous year? Referenced above, this is probably not worth
+                     exploring as later milestone changes will eliminate this confusion.
+                     */
+                    if (y < this->nyears) {
+                        /*
+                         First thing we need is total mortality aggregated across all fleets
+                         to inform the subsequent catch and change in numbers at age
+                         calculations. This is only calculated for years < nyears as these are
+                         the model estimated years with data. The year loop extends to
+                         y=nyears so that population numbers at age and SSB can be calculated
+                         at the end of the last year of the model
+                         */
+                        CalculateMortality(i_age_year, y, a);
+                    }
+                    CalculateMaturityAA(i_age_year, a);
+                    /* if statements needed because some quantities are only needed
+                    for the first year and/or age, so these steps are included here.
+                     */
+                    if (y == 0) {
+                        // Initial numbers at age is a user input or estimated parameter
+                        // vector.
+                        CalculateInitialNumbersAA(i_age_year, a);
+
+                        if (a == 0) {
+                            for (size_t p = 0; p < this->populations.size(); p++) {
+                                this->populations[p]->derived_quantities["unfished_numbers_at_age"][i_age_year] =
+                                        fims_math::exp(this->populations[p]->recruitment->log_rzero[0]);
+                            }
+                        } else {
+                            CalculateUnfishedNumbersAA(i_age_year, a - 1, a);
+                        }
+
+                        /*
+                         Fished and unfished biomass vectors are summing biomass at
+                         age across ages.
+                         */
+
+                        CalculateBiomass(i_age_year, y, a);
+
+                        CalculateUnfishedBiomass(i_age_year, y, a);
+
+                        /*
+                         Fished and unfished spawning biomass vectors are summing biomass at
+                         age across ages to allow calculation of recruitment in the next year.
+                         */
+
+                        CalculateSpawningBiomass(i_age_year, y, a);
+
+                        CalculateUnfishedSpawningBiomass(i_age_year, y, a);
+
+                        /*
+                         Expected recruitment in year 0 is numbers at age 0 in year 0.
+                         */
+                        for (size_t p = 0; p < this->populations.size(); p++) {
+                            this->populations[p]->derived_quantities["expected_recruitment"][i_age_year] =
+                                    this->populations[p]->derived_quantities["numbers_at_age"][i_age_year];
+                        }
+                    } else {
+                        if (a == 0) {
+                            // Set the nrecruits for age a=0 year y (use pointers instead of
+                            // functional returns) assuming fecundity = 1 and 50:50 sex ratio
+                            CalculateRecruitment(i_age_year, y, y);
+                            this->unfished_numbers_at_age[i_age_year] =
+                                    fims_math::exp(this->recruitment->log_rzero[0]);
+
+                        } else {
+                            size_t i_agem1_yearm1 = (y - 1) * nages + (a - 1);
+                            CalculateNumbersAA(i_age_year, i_agem1_yearm1, a);
+                            CalculateUnfishedNumbersAA(i_age_year, i_agem1_yearm1, a);
+                        }
+                        CalculateBiomass(i_age_year, y, a);
+                        CalculateSpawningBiomass(i_age_year, y, a);
+
+                        CalculateUnfishedBiomass(i_age_year, y, a);
+                        CalculateUnfishedSpawningBiomass(i_age_year, y, a);
+                    }
+
+                    /*
+                    Here composition, total catch, and index values are calculated for all
+                    years with reference data. They are not calculated for y=nyears as there
+                    is this is just to get final population structure at the end of the
+                    terminal year.
+                     */
+                    if (y < this->nyears) {
+                        CalculateCatchNumbersAA(i_age_year, y, a);
+
+                        CalculateCatchWeightAA(y, a);
+                        CalculateCatch(y, a);
+                        CalculateIndex(i_age_year, y, a);
+                    }
+                }
             }
+
         }
 
 

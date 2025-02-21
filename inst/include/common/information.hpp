@@ -53,6 +53,15 @@ namespace fims_info {
         typedef typename std::map<
         uint32_t, std::shared_ptr<fims_data_object::DataObject<Type> > >::iterator
         data_iterator; /**< iterator for the data objects */
+        
+         // model objects
+        std::map<uint32_t, std::shared_ptr<fims_popdy::FisheryModelBase<Type> > >
+        model_objects; /**< map that holds data objects >*/
+        typedef typename std::map<
+        uint32_t, std::shared_ptr<fims_popdy::FisheryModelBase<Type> > >::iterator
+        models_iterator; /**< iterator for the data objects */
+        
+        
 
         // life history modules
         std::map<uint32_t, std::shared_ptr<fims_popdy::RecruitmentBase<Type> > >
