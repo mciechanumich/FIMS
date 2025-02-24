@@ -463,11 +463,11 @@ FIMSFit <- function(
       dplyr::mutate(
         fleet = purrr::map_chr(1:nrow(estimates), ~ {
           # Get the corresponding module ID and filter based on the "id"
-          match_module_id <- which(as.numeric(estimates[["id"]][.x]) == 
-                              unlist_module_ids[grepl(estimates[["module"]][.x], names(unlist_module_ids))])
+          match_module_id <- which(unlist_module_ids[grepl(estimates[["module"]][.x], names(unlist_module_ids))] == 
+            as.numeric(estimates[["id"]][.x]))
           # Check if a match was found, and extract the name
           if (length(match_module_id) > 0) {
-            strsplit(names(unlist_module_ids[match_module_id])[1], "\\.")[[1]][1]
+            strsplit(names(match_module_id), "\\.")[[1]][1]
           } else {
             NA_real_
           } 
