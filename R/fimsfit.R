@@ -386,13 +386,6 @@ FIMSFit <- function(
     obj[["report"]]()
   }
 
-  find_fleet <- function(input) {
-    if ("selectivity" %in% names(input$module_ids[[parent]])) {
-      tibble::tibble(parent = parent, id = unlist(input$module_ids[[parent]]["selectivity"]))
-  }
-
-  unlist_module_ids <- unlist(input$module_ids)
-
   if (length(sdreport) > 0) {
     names(sdreport[["par.fixed"]]) <- parameter_names
     dimnames(sdreport[["cov.fixed"]]) <- list(parameter_names, parameter_names)
@@ -402,6 +395,7 @@ FIMSFit <- function(
     # between the total number of rows in std and the length of parameter_names.
     derived_quantity_nrow <- nrow(std) - length(parameter_names)
 
+    unlist_module_ids <- unlist(input$module_ids)
     # Create a tibble with the data from the std, and then apply transformations.
     estimates <- tibble::tibble(
       as.data.frame(std)
@@ -414,26 +408,21 @@ FIMSFit <- function(
         label = dimnames(std)[[1]],
         .before = "estimate"
       ) |>
-      separate_wider_delim(
+      tidyr::separate_wider_delim(
         label,
         delim = ".",
         names = c("module", "label", "id", "index"),
         too_few = "align_start"
       ) |>
-      # TODO: add column "fleet" (e.g., selectivity parameters needt o be linked
-      # back with fleet1 and survey1)
-      dplyr::mutate(
-        fleet = NA,
-        .before = "estimate"
-      ) |>
+      dplyr::select(module, id, label, index, estimate, uncertainty) |>
       # TODO: add column "age"
       dplyr::mutate(
-        age = NA,
+        age = NA_real_,
         .before = "estimate"
       ) |>
       # TODO: add column "time"
       dplyr::mutate(
-        time = NA,
+        time = NA_real_,
         .before = "estimate"
       ) |>
       # initial: the initial value use to start the optimization procedure
@@ -441,7 +430,7 @@ FIMSFit <- function(
       # fixed and random effects while obj[["par"]] only returns initial fixed
       # effects
       dplyr::mutate(
-        initial = c(obj[["env"]][["parameters"]][["p"]], rep(NA, derived_quantity_nrow)),
+        initial = c(obj[["env"]][["parameters"]][["p"]], rep(NA_real_, derived_quantity_nrow)),
         .before = "estimate"
       ) |>
       # TRUE/FALSE indicator of if the parameter was estimated (and not fixed),
@@ -449,13 +438,13 @@ FIMSFit <- function(
       dplyr::mutate(
         estimated = c(
           rep(TRUE, length(parameter_names)),
-          rep(NA, derived_quantity_nrow)
+          rep(NA_real_, derived_quantity_nrow)
         ),
         .after = "uncertainty"
       ) |>
       # gradient: the gradient component for that parameter, NA for derived quantities
       dplyr::mutate(
-        gradient = c(obj[["gr"]](opt[["par"]]), rep(NA, derived_quantity_nrow)),
+        gradient = c(obj[["gr"]](opt[["par"]]), rep(NA_real_, derived_quantity_nrow)),
         .after = "uncertainty"
       ) |>
       # likelihood: the likelihood component for that parameter given the prior,
@@ -466,15 +455,25 @@ FIMSFit <- function(
       # The term, 'likelihood' implies the value is with respect to data,
       # so we might want to rename this field.
       dplyr::mutate(
-        likelihood = NA,
+        likelihood = NA_real_,
         .after = "uncertainty"
+      ) |>
+      # TODO: add column "fleet" (e.g., selectivity parameters needt o be linked
+      # back with fleet1 and survey1)
+      dplyr::mutate(
+        fleet = purrr::map_chr(1:nrow(estimates), ~ {
+          # Get the corresponding module ID and filter based on the "id"
+          match_module_id <- which(as.numeric(estimates[["id"]][.x]) == 
+                              unlist_module_ids[grepl(estimates[["module"]][.x], names(unlist_module_ids))])
+          # Check if a match was found, and extract the name
+          if (length(match_module_id) > 0) {
+            strsplit(names(unlist_module_ids[match_module_id])[1], "\\.")[[1]][1]
+          } else {
+            NA_real_
+          } 
+        }),
+        .before = "age"
       )
-
-      for (i in 1:nrow(estimates)){
-        condition <- which(as.numeric(estimates[["id"]][i]) == unlist_module_ids[grepl(estimates[["module"]][i], names(unlist_module_ids))])
-        if (length(condition) > 0) estimates[["fleet"]][i] <- strsplit(names(condition), estimates[["module"]][i])[[1]][1]
-      }
-
   } else {
     estimates <- tibble::tibble(
       label = names(obj[["par"]]),
