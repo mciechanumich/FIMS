@@ -414,6 +414,12 @@ FIMSFit <- function(
         names = c("module", "label", "id", "index"),
         too_few = "align_start"
       ) |>
+      dplyr::mutate_at(c("id", "index"), as.integer) |>
+      dplyr::mutate(
+        # Move rows that were misaligned to the 'label' column
+        label = ifelse(is.na(label), module, label),
+        module = ifelse(is.na(id), NA_character_, module)
+      ) |>
       dplyr::select(module, id, label, index, estimate, uncertainty) |>
       # TODO: add column "age"
       dplyr::mutate(
@@ -422,7 +428,7 @@ FIMSFit <- function(
       ) |>
       # TODO: add column "time"
       dplyr::mutate(
-        time = NA_real_,
+        time = NA_integer_,
         .before = "estimate"
       ) |>
       # initial: the initial value use to start the optimization procedure
@@ -438,7 +444,7 @@ FIMSFit <- function(
       dplyr::mutate(
         estimated = c(
           rep(TRUE, length(parameter_names)),
-          rep(NA_real_, derived_quantity_nrow)
+          rep(NA, derived_quantity_nrow)
         ),
         .after = "uncertainty"
       ) |>
@@ -460,19 +466,32 @@ FIMSFit <- function(
       ) |>
       # TODO: add column "fleet" (e.g., selectivity parameters needt o be linked
       # back with fleet1 and survey1)
+      dplyr::rowwise() |>
       dplyr::mutate(
-        fleet = purrr::map_chr(1:nrow(estimates), ~ {
-          # Get the corresponding module ID and filter based on the "id"
-          match_module_id <- which(unlist_module_ids[grepl(estimates[["module"]][.x], names(unlist_module_ids))] == 
-            as.numeric(estimates[["id"]][.x]))
-          # Check if a match was found, and extract the name
-          if (length(match_module_id) > 0) {
+        fleet = switch(
+          module,
+          "selectivity" = {
+            # Get the corresponding module ID and filter based on the "id"
+            match_module_id <- which(unlist_module_ids[grepl(module, names(unlist_module_ids))] == id)
             strsplit(names(match_module_id), "\\.")[[1]][1]
-          } else {
-            NA_real_
-          } 
-        }),
+          },
+          "fleet" = names(input[["module_ids"]])[id],
+          NA_character_
+        ),
         .before = "age"
+      ) |>
+      dplyr::mutate(
+        age = switch(
+          label,
+          "log_init_naa" = FIMS::get_ages(input[["data"]])[index+1],
+          NA_real_
+        )
+      ) |>
+      dplyr::mutate(
+        time = case_when(
+          # TODO: add index for FMort
+          label %in% c("log_Fmort", "FMort") ~ FIMS::get_start_year(input[["data"]]) + index,
+        )
       )
   } else {
     estimates <- tibble::tibble(
