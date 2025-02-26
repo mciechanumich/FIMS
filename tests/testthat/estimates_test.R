@@ -240,14 +240,3 @@ if (number_of_newton_steps > 0) {
     obj[["report"]]()
   }
 
-
-partial_match <- lapply(input$module_ids, function(x) grep("selectivity", names(x)))
-
-fleet_name <- names(input)[sapply(input, function(x) {
-          if (is.data.frame(x)) {
-            # Match 'selectivity' column value to 'id'
-            any(x$selectivity == id)  # Check if 'selectivity' matches 'id'
-          } else {
-            FALSE
-          }
-        })]

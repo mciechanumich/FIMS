@@ -488,7 +488,7 @@ FIMSFit <- function(
         )
       ) |>
       dplyr::mutate(
-        time = case_when(
+        time = dplyr::case_when(
           # TODO: add index for FMort
           label %in% c("log_Fmort", "FMort") ~ FIMS::get_start_year(input[["data"]]) + index,
         )
@@ -586,6 +586,7 @@ fit_fims <- function(input,
     )
     return(initial_fit)
   }
+  
   if (!is_fims_verbose()) {
     control$trace <- 0
   }
