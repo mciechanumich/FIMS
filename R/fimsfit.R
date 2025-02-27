@@ -343,21 +343,43 @@ FIMSFit <- function(
     sdreport = list(),
     timing = c("time_total" = as.difftime(0, units = "secs")),
     version = utils::packageVersion("FIMS")) {
-  # What we aspire the estimate table to look like
+  
+  # Outline for the estimates table
   estimates_outline <- dplyr::tibble(
+    # The FIMS Rcpp module
+    module = character(),
+    # The unique ID of the module
+    id = integer(),
+    # The name of the parameter or derived quantity
     label = character(),
+    # The index number corresponding to the label
+    index = integer(),
+    # The fleet name associated with the parameter or derived quantity
     fleet = character(),
+    # The age associated with the parameter or derived quantity
     age = numeric(),
-    time = numeric(),
+    # The length associated with the parameter or derived quantity
+    length = numeric(),
+    # The modeled time perioed that the value pertains to
+    time = integer(),
+    # The initial value use to start the optimization procedure
     initial = numeric(),
+    # The estaimted parameter value, which would be the MLE estimate or the value 
+    # used for a given MCMC iteration
     estimate = numeric(),
+    # Estimated uncertainty, reported as a standard deviation
     uncertainty = numeric(),
-    likelihood = numeric(),
+    # The pointwise log-likelihood used for the estimation model
+    log_lik = numeric(),
+    # The pointwise log-likelihood used for the test or holdout data
+    log_lik_cv = numeric(), 
+    # The gradient component for that parameter, NA for derived quantities
     gradient = numeric(),
+    # A TRUE/FALSE indicator of whether the parameter was estimated (and not fixed), 
+    # with NA for derived quantities
     estimated = logical()
   )
-  rm(estimates_outline)
-
+  
   # Determine the number of parameters
   n_total <- length(obj[["env"]][["last.par.best"]])
   n_fixed_effects <- length(obj[["par"]])
