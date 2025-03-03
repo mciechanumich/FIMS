@@ -418,80 +418,45 @@ FIMSFit <- function(
     derived_quantity_nrow <- nrow(std) - length(parameter_names)
 
     unlist_module_ids <- unlist(input$module_ids)
+    # Define common variables for model years, ages, and other parameters
+    model_years <- FIMS::get_start_year(input[["data"]]):FIMS::get_end_year(input[["data"]])
+    projection_year <- tail(model_years, 1) + 1
+    all_years <- c(model_years, projection_year)
     # Create a tibble with the data from the std, and then apply transformations.
-    estimates <- tibble::tibble(
-      as.data.frame(std)
-    ) |>
-      # estimate: estimated parameter value, which would be the MLE estimate or the
-      # value used for a given MCMC iteration
-      # uncertainty: Estimated uncertainty, reported as a standard deviation
-      dplyr::rename(estimate = "Estimate", uncertainty = "Std. Error") |>
-      dplyr::mutate(
+    estimates <- estimates_outline |>
+      tibble::add_row(
         label = dimnames(std)[[1]],
-        .before = "estimate"
+        estimate = std[, "Estimate"],
+        uncertainty = std[, "Std. Error"]
       ) |>
-      tidyr::separate_wider_delim(
-        label,
-        delim = ".",
-        names = c("module", "label", "id", "index"),
-        too_few = "align_start"
-      ) |>
-      dplyr::mutate_at(c("id", "index"), as.integer) |>
-      dplyr::mutate(
-        # Move rows that were misaligned to the 'label' column
-        label = ifelse(is.na(label), module, label),
-        module = ifelse(is.na(id), NA_character_, module)
-      ) |>
-      dplyr::select(module, id, label, index, estimate, uncertainty) |>
-      # TODO: add column "age"
-      dplyr::mutate(
-        age = NA_real_,
-        .before = "estimate"
-      ) |>
-      # TODO: add column "time"
-      dplyr::mutate(
-        time = NA_integer_,
-        .before = "estimate"
-      ) |>
-      # initial: the initial value use to start the optimization procedure
+      # Create row_id to be used in mutating joins later
+      tibble::rowid_to_column("row_id") |>
       # Use obj[["env"]][["parameters"]][["p"]] as this will return both initial
       # fixed and random effects while obj[["par"]] only returns initial fixed
       # effects
       dplyr::mutate(
-        initial = c(obj[["env"]][["parameters"]][["p"]], rep(NA_real_, derived_quantity_nrow)),
-        .before = "estimate"
+        initial = c(obj[["env"]][["parameters"]][["p"]], rep(NA_real_, derived_quantity_nrow))
       ) |>
-      # TRUE/FALSE indicator of if the parameter was estimated (and not fixed),
-      # with NA for derived quantities
+      dplyr::mutate(
+        gradient = c(obj[["gr"]](opt[["par"]]), rep(NA_real_, derived_quantity_nrow))
+      ) |>
       dplyr::mutate(
         estimated = c(
           rep(TRUE, length(parameter_names)),
           rep(NA, derived_quantity_nrow)
-        ),
-        .after = "uncertainty"
+        )
       ) |>
-      # gradient: the gradient component for that parameter, NA for derived quantities
-      dplyr::mutate(
-        gradient = c(obj[["gr"]](opt[["par"]]), rep(NA_real_, derived_quantity_nrow)),
-        .after = "uncertainty"
-      ) |>
-      # likelihood: the likelihood component for that parameter given the prior,
-      # NA for derived quantities.
-      # TODO: What this column is referring to? Is this specific to priors? Is
-      # it supposed to be the likelihood, log-likelihood, or negative log-likelihood?
-      # Or is this the prior or posterior probability from a Bayesian perspective?
-      # The term, 'likelihood' implies the value is with respect to data,
-      # so we might want to rename this field.
-      dplyr::mutate(
-        likelihood = NA_real_,
-        .after = "uncertainty"
-      ) |>
-      # TODO: add column "fleet" (e.g., selectivity parameters needt o be linked
-      # back with fleet1 and survey1)
+      dplyr::mutate(label_splits = strsplit(label, split = "\\.")) |>
       dplyr::rowwise() |>
       dplyr::mutate(
-        fleet = switch(
-          module,
+        module = ifelse(length(label_splits) > 1, label_splits[[1]], NA_character_),
+        id = ifelse(length(label_splits) > 1, as.integer(label_splits[[3]]), NA_integer_),
+        label = ifelse(length(label_splits) > 1, label_splits[[2]], label),
+        index = ifelse(length(label_splits) > 1, as.integer(label_splits[[4]]), NA_integer_),
+      ) |>
+      dplyr::select(-label_splits) |>
+      dplyr::mutate(
+        fleet = switch(module,
           "selectivity" = {
             # Get the corresponding module ID and filter based on the "id"
             match_module_id <- which(unlist_module_ids[grepl(module, names(unlist_module_ids))] == id)
@@ -499,22 +464,171 @@ FIMSFit <- function(
           },
           "fleet" = names(input[["module_ids"]])[id],
           NA_character_
-        ),
-        .before = "age"
-      ) |>
-      dplyr::mutate(
-        age = switch(
-          label,
-          "log_init_naa" = FIMS::get_ages(input[["data"]])[index+1],
-          NA_real_
         )
       ) |>
-      dplyr::mutate(
-        time = dplyr::case_when(
-          # TODO: add index for FMort
-          label %in% c("log_Fmort", "FMort") ~ FIMS::get_start_year(input[["data"]]) + index,
+      dplyr::ungroup()
+
+    # 3 represents recruitment, growth, and maturity modules
+    total_fleet_num <- length(input[["module_ids"]]) - 3
+    model_years <- FIMS::get_start_year(input[["data"]]):FIMS::get_end_year(input[["data"]])
+    projection_year <- tail(model_years, 1) + 1
+    full_years <- c(model_years, projection_year)
+
+    if ("log_Fmort" %in% estimates[["label"]]){
+      log_Fmort <- estimates |>
+        dplyr::filter(label == "log_Fmort") |>
+        dplyr::mutate(time = rep(model_years, times = length(unique(fleet))))
+      estimates <- estimates |>
+        dplyr::rows_update(log_Fmort, by = "row_id")
+    }
+
+    if ("log_init_naa" %in% estimates[["label"]]){
+      log_init_naa <- estimates |>
+        dplyr::filter(label == "log_init_naa") |>
+        dplyr::mutate(age = FIMS::get_ages(input[["data"]])) |>
+        dplyr::mutate(time = FIMS::get_start_year(input[["data"]]))
+      estimates <- estimates |>
+        dplyr::rows_update(log_init_naa, by = "row_id")
+    }
+
+    if ("NAA" %in% estimates[["label"]]){
+      NAA <- estimates |>
+        dplyr::filter(label == "NAA") |>
+        dplyr::mutate(
+          age = rep(
+            FIMS::get_ages(input[["data"]]),
+            # + 1 means consider one project year
+            times = FIMS::get_n_years(input[["data"]]) + 1
+          )
+        ) |>
+        dplyr::mutate(
+          time = rep(
+            # + 1 means consider one project year
+            c(model_years, tail(model_years, 1)+1), 
+            each = get_n_ages(input[["data"]])
+          )
         )
-      )
+      estimates <- estimates |>
+        dplyr::rows_update(NAA, by = "row_id")
+    }
+
+    if ("Biomass" %in% estimates[["label"]]){
+      Biomass <- estimates |>
+        dplyr::filter(label == "Biomass") |>
+        dplyr::mutate(time = all_years)
+      estimates <- estimates |>
+        dplyr::rows_update(Biomass, by = "row_id")
+    }
+
+    if ("SSB" %in% estimates[["label"]]){
+      SSB <- estimates |>
+        dplyr::filter(label == "SSB") |>
+        dplyr::mutate(time = all_years)
+      estimates <- estimates |>
+        dplyr::rows_update(SSB, by = "row_id")
+    }
+
+    # TODO: Check whether LogRecDev are estimated? Could not find initial values from 
+    # obj[["env"]][["parameters"]][["p"]].
+    if ("LogRecDev" %in% estimates[["label"]]) {
+      LogRecDev <- estimates |>
+        dplyr::filter(label == "LogRecDev") |>
+        dplyr::mutate(age = FIMS::get_ages(input[["data"]])[1]) |>
+        dplyr::mutate(time = model_years[-1])
+      estimates <- estimates |>
+        dplyr::rows_update(LogRecDev, by = "row_id")
+    }
+
+    if ("FMort" %in% estimates[["label"]]){
+      FMort <- estimates |>
+        dplyr::filter(label == "FMort") # |>
+        # TODO: uncomment out the line below after filling in fleet info based on
+        # module and id info.
+        # dplyr::mutate(time = rep(model_years, times = length(unique(fleet))))
+      estimates <- estimates |>
+        dplyr::rows_update(FMort, by = "row_id")
+    }
+
+    # TODO: update fleet column after filling in module and id columns using the 
+    # json output
+    if ("ExpectedIndex" %in% estimates[["label"]]){
+      ExpectedIndex <- estimates |>
+        dplyr::filter(label == "ExpectedIndex") |>
+        dplyr::mutate(time = rep(model_years, times = total_fleet_num))
+      estimates <- estimates |>
+        dplyr::rows_update(ExpectedIndex, by = "row_id")
+    }
+
+    if ("CNAA" %in% estimates[["label"]]){
+      CNAA <- estimates |>
+        dplyr::filter(label == "CNAA") |>
+        dplyr::mutate(
+          age = rep(
+            FIMS::get_ages(input[["data"]]),
+            times = FIMS::get_n_years(input[["data"]]) * total_fleet_num
+          ), 
+          time = rep(
+            model_years, 
+            each = FIMS::get_n_ages(input[["data"]]) * total_fleet_num
+          )
+        )
+      estimates <- estimates |>
+        dplyr::rows_update(CNAA, by = "row_id")
+    }
+
+    if ("CNAL" %in% estimates[["label"]]){
+      CNAL <- estimates |>
+        dplyr::filter(label == "CNAL") |>
+        dplyr::mutate(
+          age = rep(
+            FIMS::get_lengths(input[["data"]]),
+            times = FIMS::get_n_years(input[["data"]]) * total_fleet_num
+          ), 
+          time = rep(
+            model_years, 
+            each = FIMS::get_n_lengths(input[["data"]]) * total_fleet_num
+          )
+        )
+      estimates <- estimates |>
+        dplyr::rows_update(CNAL, by = "row_id")
+    }
+
+    if ("PCNAA" %in% estimates[["label"]]){
+      PCNAA <- estimates |>
+        dplyr::filter(label == "PCNAA") |>
+        dplyr::mutate(
+          age = rep(
+            FIMS::get_ages(input[["data"]]),
+            times = FIMS::get_n_years(input[["data"]]) * total_fleet_num
+          ), 
+          time = rep(
+            model_years, 
+            each = FIMS::get_n_ages(input[["data"]]) * total_fleet_num
+          )
+        )
+      estimates <- estimates |>
+        dplyr::rows_update(PCNAA, by = "row_id")
+    }
+
+    if ("PCNAL" %in% estimates[["label"]]){
+      PCNAL <- estimates |>
+        dplyr::filter(label == "PCNAL") |>
+        dplyr::mutate(
+          age = rep(
+            FIMS::get_lengths(input[["data"]]),
+            times = FIMS::get_n_years(input[["data"]]) * total_fleet_num
+          ), 
+          time = rep(
+            model_years, 
+            each = FIMS::get_n_lengths(input[["data"]]) * total_fleet_num
+          )
+        )
+      estimates <- estimates |>
+        dplyr::rows_update(PCNAL, by = "row_id")
+    }
+
+    estimates <- estimates |>
+      dplyr::select(-row_id)
   } else {
     estimates <- tibble::tibble(
       label = names(obj[["par"]]),
